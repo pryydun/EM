@@ -1,0 +1,101 @@
+﻿@page "/edit-event/{Id:int}"
+@using EM.CoreBusiness
+@using EM.WebApp.Components.Pages.ViewModel
+@inject IEditEventUseCase EditEventUseCase
+@inject IViewEventByIdUseCase ViewEventByIdUseCase
+@inject NavigationManager NavigationManager
+
+<h3>Edit Event</h3>
+
+@if (eventToEdit != null)
+{
+    <EditForm Model="eventToEdit" Formname="EditEventForm" OnValidSubmit="UpdateEvent">
+        <DataAnnotationsValidator></DataAnnotationsValidator>
+        <ValidationSummary></ValidationSummary>
+
+
+        <InputNumber @bind-Value="eventToEdit.Id" hidden></InputNumber>
+
+        <div class="form-group">
+            <label for="eventTitle">Event Title</label>
+            <InputText id="eventTitle" @bind-Value="eventToEdit.Title" class="form-control" />
+        </div>
+
+        <div class="form-group">
+            <label for="eventDescription">Event Description</label>
+            <InputTextArea id="eventDescription" @bind-Value="eventToEdit.Description" class="form-control" />
+        </div>
+
+        <div class="form-group">
+            <label for="eventStartDate">Start Date</label>
+            <InputDate id="eventStartDate" @bind-Value="eventToEdit.StartDate" class="form-control" TValue="DateTime" />
+        </div>
+
+        <div class="form-group">
+            <label for="eventEndDate">End Date</label>
+            <InputDate id="eventEndDate" @bind-Value="eventToEdit.EndDate" class="form-control" TValue="DateTime" />
+        </div>
+
+        <div class="form-group">
+            <label for="eventLocation">Location</label>
+            <InputText id="eventLocation" @bind-Value="eventToEdit.Location" class="form-control" />
+        </div>
+        <br />
+        <button type="submit" class="btn btn-primary">Update</button>
+        <a href="/events" class="btn btn-secondary">Cancel</a>
+    </EditForm>
+}
+else
+{
+    <p>Loading...</p>
+}
+
+@code {
+    [Parameter]
+    public int Id { get; set; }
+    [SupplyParameterFromForm]
+    private EventViewModel? eventToEdit { get; set; }
+
+    protected override async Task OnParametersSetAsync()
+    {
+        if (eventToEdit == null)
+        {
+            // Завантажуємо подію
+            var ev = await ViewEventByIdUseCase.ExecuteAsync(Id);
+
+             
+                // Ініціалізуємо ViewModel
+                eventToEdit = new EventViewModel
+                    {
+                        Id = ev.Id,
+                        Title = ev.Title,
+                        Description = ev.Description,
+                        StartDate = ev.StartDate,
+                        EndDate = ev.EndDate,
+                        Location = ev.Location
+                    };
+             
+        }
+    }
+
+    private async Task UpdateEvent()
+    {
+        if (eventToEdit != null)
+        {
+            var evv = new Event
+                {
+                    Id = eventToEdit.Id,
+                    Title = eventToEdit.Title,
+                    Description = eventToEdit.Description,
+                    StartDate = eventToEdit.StartDate,
+                    EndDate = eventToEdit.EndDate,
+                    Location = eventToEdit.Location
+
+
+                };
+            await EditEventUseCase.ExecuteAsync(evv);
+             
+            NavigationManager.NavigateTo("/events");
+        }
+    }
+}

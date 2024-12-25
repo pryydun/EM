@@ -1,0 +1,43 @@
+﻿
+
+@inject IDeleteEventUseCase DeleteEventUseCase
+@inject NavigationManager NavigationManager
+
+@if (this.Event is not null)
+{
+<tr>
+    <td>@Event.Title</td>
+    <td>@Event.Description</td>
+    <td>@Event.StartDate.ToShortDateString()</td>
+    <td>@Event.EndDate.ToShortDateString()</td>
+    <td>@Event.Location</td>
+    <td>
+            <a href="/edit-event/@Event.Id" class="btn btn-primary">Edit</a>
+        </td>
+        <td>
+            <a href="/event-details/@Event.Id" class="btn btn-info">Details</a>
+        </td>
+    
+    <td>
+        <EditForm Model="Event"
+                  FormName="@($"form-delete-event-{Event.Id}")"
+                  OnValidSubmit="@(() => DeleteEvent(Event.Id))">
+            <button type="submit" class="btn btn-danger">Delete</button>
+        </EditForm>
+    </td>
+</tr>
+}
+@code {
+    [Parameter]
+    public Event? Event { get; set; }
+
+    private async Task DeleteEvent(int id)
+    {
+       
+            await DeleteEventUseCase.ExecuteAsync(id);
+
+            NavigationManager.Refresh();
+        
+    }
+}
+

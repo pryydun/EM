@@ -1,0 +1,49 @@
+﻿@inject IViewEventsByNameUseCase ViewEventsByNameUseCase
+
+<table class="table">
+    <thead>
+        <tr>
+            <th>Назва</th>
+            <th>Description</th>
+           
+            <th>Дата початку</th>
+            <th>Дата завершення</th>
+            <th>Локація</th>
+            <th>Дії</th>
+        </tr>
+
+    </thead>
+    <tbody>
+        @if (Events != null && Events.Any())
+        {
+            @foreach (var ev in Events)
+            {
+                <EventListItemComponent Event="ev" />
+            }
+        }
+        else
+        {
+            <tr>
+                <td colspan="5" class="text-center">Подій не знайдено</td>
+            </tr>
+        }
+    </tbody>
+</table>
+
+@code {
+    private List<Event>? Events;
+
+    [Parameter]
+    public string? SearchEventFilter { get; set; }
+
+   
+
+    protected override async Task OnParametersSetAsync()
+    {
+         
+            Events = (await ViewEventsByNameUseCase.ExecuteAsync(SearchEventFilter??string.Empty)).ToList();
+        
+        
+    }
+
+}

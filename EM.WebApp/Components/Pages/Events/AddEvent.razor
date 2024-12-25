@@ -1,0 +1,72 @@
+﻿@page "/add-event"
+@using EM.CoreBusiness
+@using EM.WebApp.Components.Pages.ViewModel
+@inject IAddEventsUseCase AddEventsUseCase
+@inject NavigationManager NavigationManager
+
+<h3>Add Event</h3>
+
+<EditForm Model="newEvent" OnValidSubmit="Save" Formname="AddEventForm">
+
+    <DataAnnotationsValidator />
+    
+    
+    
+    <div class="form-group">
+        <label for="eventTitle">Event Title</label>
+        <InputText id="eventTitle" @bind-Value="newEvent.Title" class="form-control" />
+        <ValidationMessage For="@(() => newEvent.Title)" />
+    </div>
+
+    <div class="form-group">
+        <label for="eventDescription">Event Description</label>
+        <InputTextArea id="eventDescription" @bind-Value="newEvent.Description" class="form-control" />
+        <ValidationMessage For="@(() => newEvent.Description)" />
+    </div>
+
+    <div class="form-group">
+        <label for="eventStartDate">Start Date</label>
+        <InputDate id="eventStartDate" @bind-Value="newEvent.StartDate" class="form-control" />
+        <ValidationMessage For="@(() => newEvent.StartDate)" />
+    </div>
+
+    <div class="form-group">
+        <label for="eventEndDate">End Date</label>
+        <InputDate id="eventEndDate" @bind-Value="newEvent.EndDate" class="form-control" />
+        <ValidationMessage For="@(() => newEvent.EndDate)" />
+    </div>
+
+    <div class="form-group">
+        <label for="eventLocation">Location</label>
+        <InputText id="eventLocation" @bind-Value="newEvent.Location" class="form-control" />
+        <ValidationMessage For="@(() => newEvent.Location)" />
+    </div>
+    <br />
+    <button type="submit" class="btn btn-primary">Save</button>
+    <a href="/events" class="btn btn-secondary">Cancel</a>
+</EditForm>
+
+@code {
+    [SupplyParameterFromForm]
+    private EventViewModel newEvent { get; set; } = new EventViewModel();
+
+    private async Task Save()
+    {
+        var ev = new Event
+            {
+
+                Id = newEvent.Id,
+                Title = newEvent.Title,
+                Description = newEvent.Description,
+                StartDate = newEvent.StartDate,
+                EndDate = newEvent.EndDate,
+                Location = newEvent.Location
+
+
+            };
+        await AddEventsUseCase.ExecuteAsync(ev);
+        NavigationManager.NavigateTo("/events");
+    }
+   
+}
+

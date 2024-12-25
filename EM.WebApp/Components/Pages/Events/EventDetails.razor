@@ -1,0 +1,79 @@
+﻿@page "/event-details/{Id:int}"
+@inject IViewEventByIdUseCase ViewEventByIdUseCase
+@inject NavigationManager NavigationManager
+@inject AuthenticationStateProvider AuthenticationStateProvider
+@inject IEventUseCase EventUseCase
+
+<h3>Event Details</h3>
+
+@if (Event == null)
+{
+    <p>Loading...</p>
+}
+else
+{
+    <div class="card">
+        <div class="card-body">
+            <h4 class="card-title">@Event.Title</h4>
+            <p class="card-text"><strong>Description:</strong> @Event.Description</p>
+            <p class="card-text"><strong>Start Date:</strong> @Event.StartDate.ToString("f")</p>
+            <p class="card-text"><strong>End Date:</strong> @Event.EndDate.ToString("f")</p>
+            <p class="card-text"><strong>Location:</strong> @Event.Location</p>
+        </div>
+    </div>
+
+    <h5>Registered Users:</h5>
+    @if (RegisteredUsers.Any())
+    {
+        <ul class="list-group">
+            @foreach (var user in RegisteredUsers)
+            {
+                <li class="list-group-item">@user.Name (@user.Email)</li>
+            }
+        </ul>
+    }
+    else
+    {
+        <p>No users have registered for this event yet.</p>
+    }
+
+    <button class="btn btn-primary mt-3" @onclick="RegisterToEvent">Register to Event</button>
+
+    <a href="/events" class="btn btn-secondary mt-3">Back to Events</a>
+}
+
+@code {
+    [Parameter]
+    public int Id { get; set; }
+
+    private Event? Event { get; set; }
+    private List<User> RegisteredUsers = new();
+
+    protected override async Task OnInitializedAsync()
+    {
+        // Load event details
+        Event = await ViewEventByIdUseCase.ExecuteAsync(Id);
+
+        // Load registered users
+        RegisteredUsers = (await EventUseCase.GetRegisteredUsersAsync(Id)).ToList();
+    }
+
+    private async Task RegisterToEvent()
+    {
+        var authState = await AuthenticationStateProvider.GetAuthenticationStateAsync();
+        var user = authState.User;
+
+        if (user.Identity?.IsAuthenticated == true)
+        {
+            var userId = int.Parse(user.FindFirst(c => c.Type == "sub")?.Value ?? "0"); // Replace "sub" with correct claim type for user ID
+            await EventUseCase.RegisterUserToEventAsync(userId, Id);
+
+            // Refresh registered users
+            RegisteredUsers = (await EventUseCase.GetRegisteredUsersAsync(Id)).ToList();
+        }
+        else
+        {
+            NavigationManager.NavigateTo("/Account/Login");
+        }
+    }
+}

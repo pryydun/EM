@@ -1,0 +1,28 @@
+﻿@page "/events"
+@inject IViewEventsByNameUseCase ViewEventsByNameUseCase
+
+<h3>EventList</h3>
+
+<SearchComponent OnSearch="HandleSearch"></SearchComponent>
+<br/>
+
+<EventListComponent SearchEventFilter="@searchEventName"></EventListComponent>
+<br/>
+
+<div class="d-flex justify-content-start mb-3">
+    <a href="/add-event" class="btn btn-success btn-lg">Add Event</a>
+</div>
+
+@code {
+   
+
+    private string? searchEventName;
+
+   
+
+    private void HandleSearch(string searchFilter)
+    {
+        searchEventName = searchFilter;
+    }
+
+}

@@ -1,0 +1,42 @@
+﻿@inject IViewUsersByNameUseCase ViewUsersByNameUseCase
+
+<table class="table table-striped">
+    <thead>
+        <tr>
+            <th>Name</th>
+            <th>Email</th>
+        </tr>
+    </thead>
+    <tbody>
+        @if (Users != null && Users.Any())
+        {
+            @foreach (var user in Users)
+            {
+                <UserListItemComponent User="user" />
+            }
+        }
+        else
+        {
+            <tr>
+                <td colspan="2" class="text-center">No users found</td>
+            </tr>
+        }
+    </tbody>
+</table>
+
+@code {
+    private List<User>? Users;
+
+    [Parameter]
+    public string? SearchEventFilter { get; set; }
+
+
+
+    protected override async Task OnParametersSetAsync()
+    {
+
+        Users = (await ViewUsersByNameUseCase.ExecuteAsync(SearchEventFilter ?? string.Empty)).ToList();
+
+
+    }
+}

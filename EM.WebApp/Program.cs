@@ -10,15 +10,15 @@ using EM.WebApp.Data;
 
 using EM_UseCases.Events.interfaces;
 using EM_UseCases.PluginInterfaces;
-using EM_UseCases.Users;
-using EM_UseCases.Users.EM_UseCases.Users;
-using EM_UseCases.Users.interfaces;
+ 
 using Microsoft.AspNetCore.Components.Authorization;
 using Microsoft.AspNetCore.Components.Server;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.DependencyInjection;
- 
+using EM.UseCases;
+using EM_UseCases;
+
 
 
 
@@ -39,8 +39,13 @@ builder.Services.AddCascadingAuthenticationState();
 builder.Services.AddScoped<IdentityUserAccessor>();
 builder.Services.AddScoped<IdentityRedirectManager>();
 builder.Services.AddScoped<AuthenticationStateProvider, ServerAuthenticationStateProvider>();
-
-builder.Services.AddAuthorization();
+builder.Services.AddAuthorization(options =>
+{
+    options.AddPolicy("GuestPolicy", policy => policy.RequireClaim("role", "Guest"));
+    options.AddPolicy("ParticipantPolicy", policy => policy.RequireClaim("role", "Participant"));
+    options.AddPolicy("OrganizerPolicy", policy => policy.RequireClaim("role", "Organizer"));
+    options.AddPolicy("AdminPolicy", policy => policy.RequireClaim("role", "Admin"));
+});
 builder.Services.AddAuthentication(options =>
 {
     options.DefaultScheme = IdentityConstants.ApplicationScheme;
@@ -71,23 +76,15 @@ builder.Services.AddSingleton<IEmailSender<ApplicationUser>, IdentityNoOpEmailSe
 
 
 
-
-
-if (builder.Environment.IsEnvironment("Testing"))
-{
-    // Реєструємо in-memory репозиторії для тестів
-    builder.Services.AddSingleton<IEventRepository, EventRepository>();
-    builder.Services.AddSingleton<IUserRepository, UserRepository>();
-}
-else
-{
-    // Реєструємо репозиторії для SQL Server
-    builder.Services.AddTransient<IEventRepository, EventEFCoreRepository>();
-    builder.Services.AddTransient<IUserRepository, UserEFCoreRepository>();
-     
-    
-}
  
+  
+   // Реєструємо репозиторії для SQL Server
+    builder.Services.AddTransient<IEventRepository, EventEFCoreRepository>();
+
+
+
+
+
 
 builder.Services.AddRazorComponents();
  
@@ -96,17 +93,22 @@ builder.Services.AddTransient<IEditEventUseCase, EditEventUseCase>();
 builder.Services.AddTransient<IAddEventsUseCase, AddEventsUseCase>();
 builder.Services.AddTransient<IViewEventByIdUseCase, ViewEventByIdUseCase>();
 builder.Services.AddTransient<IDeleteEventUseCase, DeleteEventUseCase>();
-builder.Services.AddTransient<IViewUsersByNameUseCase, ViewUsersByNameUseCase>();
-builder.Services.AddTransient<ISearchUsersUseCase, SearchUsersUseCase>();
-
-
-
+builder.Services.AddScoped<IReviewRepository, ReviewRepository>();
+builder.Services.AddTransient<IRemoveUserEventsUseCase, RemoveUserEventsUseCase>();
+builder.Services.AddTransient<IAddReviewUseCase, AddReviewUseCase>();
+builder.Services.AddTransient<IGetReviewsByEventIdUseCase, GetReviewsByEventIdUseCase>(); 
+builder.Services.AddScoped<RegisterUserToEventUseCase>();
+builder.Services.AddScoped<GetUsersByEventIdUseCase>();
+builder.Services.AddTransient<IUnregisterUserFromEventUseCase, UnregisterUserFromEventUseCase>();
+builder.Services.AddTransient<IDeleteReviewUseCase, DeleteReviewUseCase>();
+builder.Services.AddTransient<IReviewRepository, ReviewRepository>();
 
 builder.Services.AddScoped<IUserEventRepository, UserEventEFCoreRepository>();
-builder.Services.AddScoped<IEventUseCase, EventUseCase>();
- 
-builder.Services.AddScoped<IUserRepository, UserEFCoreRepository>();
+builder.Services.AddScoped<IGetUsersByEventIdUseCase, GetUsersByEventIdUseCase>();
 
+
+builder.Services.AddScoped<RegisterUserToEventUseCase>();
+ 
 
 
 var app = builder.Build();

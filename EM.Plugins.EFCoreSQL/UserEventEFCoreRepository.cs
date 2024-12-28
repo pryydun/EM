@@ -10,27 +10,52 @@ using System.Threading.Tasks;
 
 public class UserEventEFCoreRepository : IUserEventRepository
 {
-    private readonly IDbContextFactory<EMContext> _contextFactory;
+    private readonly EMContext _context;
 
-    public UserEventEFCoreRepository(IDbContextFactory<EMContext> contextFactory)
+    public UserEventEFCoreRepository(EMContext context)
     {
-        _contextFactory = contextFactory;
+        _context = context;
     }
 
-    public async Task AddUserToEventAsync(UserEvents userEvent)
+    public async Task AddUserToEventAsync(UserEvent userEvent)
     {
-        using var db = _contextFactory.CreateDbContext();
-        db.UserEvents.Add(userEvent);
-        await db.SaveChangesAsync();
+        _context.UserEvents.Add(userEvent);
+        await _context.SaveChangesAsync();
     }
 
-    public async Task<IEnumerable<User>> GetUsersByEventIdAsync(int eventId)
+    public async Task<List<Event>> GetEventsByUserIdAsync(string userId)
     {
-        using var db = _contextFactory.CreateDbContext();
-        return await db.UserEvents
-            .Where(ue => ue.EventId == eventId)
-            .Include(ue => ue.User)
-            .Select(ue => ue.User)
+        return await _context.UserEvents
+            .Where(ue => ue.UserId == userId)
+            .Select(ue => ue.Event) // Використовуємо навігаційну властивість
             .ToListAsync();
     }
+
+    public async Task<List<UserEvent>> GetUsersByEventIdAsync(int eventId)
+    {
+        return await _context.UserEvents
+            .Where(ue => ue.EventId == eventId)
+            .ToListAsync();
+    }
+    public async Task RemoveUserFromEventAsync(UserEvent userEvent)
+    {
+        var entity = await _context.UserEvents
+            .FirstOrDefaultAsync(e => e.UserId == userEvent.UserId && e.EventId == userEvent.EventId);
+
+        if (entity != null)
+        {
+            _context.UserEvents.Remove(entity);
+            await _context.SaveChangesAsync();
+        }
+    }
+    public async Task DeleteUserEventsByUserIdAsync(string userId)
+    {
+        var userEvents = await _context.UserEvents.Where(ue => ue.UserId == userId).ToListAsync();
+        if (userEvents.Any())
+        {
+            _context.UserEvents.RemoveRange(userEvents);
+            await _context.SaveChangesAsync();
+        }
+    }
+
 }

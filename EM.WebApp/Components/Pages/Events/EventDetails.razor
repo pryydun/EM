@@ -1,8 +1,18 @@
 ﻿@page "/event-details/{Id:int}"
-@inject IViewEventByIdUseCase ViewEventByIdUseCase
-@inject NavigationManager NavigationManager
+@using EM.UseCases
+@using EM.WebApp.Components.Pages.ViewModel
+@using EM.WebApp.Data
+@using Microsoft.AspNetCore.Identity
+@inject RegisterUserToEventUseCase RegisterUserToEventUseCase
+@inject IUnregisterUserFromEventUseCase UnregisterUserFromEventUseCase
+@inject IGetUsersByEventIdUseCase GetUsersByEventIdUseCase
+@inject IAddReviewUseCase AddReviewUseCase
+@inject IDeleteReviewUseCase DeleteReviewUseCase
+@inject IGetReviewsByEventIdUseCase GetReviewsByEventIdUseCase
+@inject UserManager<ApplicationUser> UserManager
 @inject AuthenticationStateProvider AuthenticationStateProvider
-@inject IEventUseCase EventUseCase
+@inject NavigationManager NavigationManager
+@inject IViewEventByIdUseCase ViewEventByIdUseCase
 
 <h3>Event Details</h3>
 
@@ -12,32 +22,105 @@
 }
 else
 {
-    <div class="card">
-        <div class="card-body">
-            <h4 class="card-title">@Event.Title</h4>
-            <p class="card-text"><strong>Description:</strong> @Event.Description</p>
-            <p class="card-text"><strong>Start Date:</strong> @Event.StartDate.ToString("f")</p>
-            <p class="card-text"><strong>End Date:</strong> @Event.EndDate.ToString("f")</p>
-            <p class="card-text"><strong>Location:</strong> @Event.Location</p>
-        </div>
-    </div>
+    @if (JoinModel != null)
+    {
+        <EditForm Model="JoinModel" OnValidSubmit="HandleJoinOrUnjoin" FormName="JoinForm">
+            <DataAnnotationsValidator />
+            <ValidationSummary />
 
-    <h5>Registered Users:</h5>
-    @if (RegisteredUsers.Any())
+            <div class="card">
+                <div class="card-body">
+                    <h4 class="card-title">@Event.Title</h4>
+                    <p class="card-text"><strong>Description:</strong> @Event.Description</p>
+                    <p class="card-text"><strong>Start Date:</strong> @Event.StartDate.ToString("f")</p>
+                    <p class="card-text"><strong>End Date:</strong> @Event.EndDate.ToString("f")</p>
+                    <p class="card-text"><strong>Location:</strong> @Event.Location</p>
+                </div>
+            </div>
+
+            <h5>Registered Users:</h5>
+            @if (RegisteredUsers.Any())
+            {
+                <ul class="list-group">
+                    @foreach (var us in RegisteredUsers)
+                    {
+                        <li class="list-group-item">
+                            <strong>@us.Name</strong> (@us.Email)
+                            <a href="/user-profile/@us.Id" class="btn btn-link">View Profile</a>
+                        </li>
+                    }
+                </ul>
+            }
+            else
+            {
+                <p>No users have registered for this event yet.</p>
+            }
+
+            <button class="btn btn-primary mt-3" type="submit">
+                @JoinButtonText
+            </button>
+        </EditForm>
+    }
+
+    <h5>Reviews:</h5>
+    @if (Reviews.Any())
     {
         <ul class="list-group">
-            @foreach (var user in RegisteredUsers)
+            @foreach (var review in Reviews)
             {
-                <li class="list-group-item">@user.Name (@user.Email)</li>
+                <li class="list-group-item d-flex justify-content-between align-items-center">
+                    <div>
+                        <strong>@review.UserName</strong>
+                        <div>
+                            @for (int i = 0; i < 5; i++)
+                            {
+                                if (i < review.Rating)
+                                {
+                                    <span class="text-warning">&#9733;</span>
+                                }
+                                else
+                                {
+                                    <span class="text-secondary">&#9734;</span>
+                                }
+                            }
+                        </div>
+                        <p>@review.Comment</p>
+                    </div>
+                     
+                        <EditForm Model="review"
+                                  FormName="@($"form-delete-review-{review.Id}")"
+                                  OnValidSubmit="@(() => HandleDeleteReview(review.Id))">
+                            <button type="submit" class="btn btn-danger btn-sm">Delete</button>
+                        </EditForm>
+                    
+                </li>
             }
         </ul>
     }
     else
     {
-        <p>No users have registered for this event yet.</p>
+        <p>No reviews available for this event.</p>
     }
 
-    <button class="btn btn-primary mt-3" @onclick="RegisterToEvent">Register to Event</button>
+    @if (ReviewModel != null  )
+    {
+        <EditForm Model="ReviewModel" OnValidSubmit="HandleAddReview" FormName="ReviewForm">
+            <DataAnnotationsValidator />
+            <ValidationSummary />
+
+            <div>
+                <label for="rating">Rating (1-5):</label>
+                <InputNumber id="Rating" @bind-Value="rating" min="1" max="5" />
+            </div>
+
+            <div>
+                <label for="comment">Comment:</label>
+                <InputTextArea placeholder="Type comment" @bind-Value="comment" />
+            </div>
+
+            <button type="submit">Submit Review</button>
+        </EditForm>
+    }
 
     <a href="/events" class="btn btn-secondary mt-3">Back to Events</a>
 }
@@ -46,34 +129,195 @@ else
     [Parameter]
     public int Id { get; set; }
 
+    [SupplyParameterFromForm]
+    private int rating { get; set; }
+
+    [SupplyParameterFromForm]
+    private string? comment { get; set; }
+
     private Event? Event { get; set; }
-    private List<User> RegisteredUsers = new();
+    private List<User> RegisteredUsers { get; set; } = new();
+    private List<Review> Reviews { get; set; } = new();
+    private JoinEventViewModel? JoinModel { get; set; }
+    private ReviewViewModel? ReviewModel { get; set; }
+    private bool IsUserRegistered { get; set; } = false;
+    private string JoinButtonText { get; set; } = "Join Event";
+    private bool IsAuthenticated { get; set; } = false;
+    private bool IsAdmin { get; set; } = false;
+    private bool IsOrganizer { get; set; } = false;
 
     protected override async Task OnInitializedAsync()
-    {
-        // Load event details
-        Event = await ViewEventByIdUseCase.ExecuteAsync(Id);
-
-        // Load registered users
-        RegisteredUsers = (await EventUseCase.GetRegisteredUsersAsync(Id)).ToList();
-    }
-
-    private async Task RegisterToEvent()
     {
         var authState = await AuthenticationStateProvider.GetAuthenticationStateAsync();
         var user = authState.User;
 
-        if (user.Identity?.IsAuthenticated == true)
+        if (user?.Identity?.IsAuthenticated == true)
         {
-            var userId = int.Parse(user.FindFirst(c => c.Type == "sub")?.Value ?? "0"); // Replace "sub" with correct claim type for user ID
-            await EventUseCase.RegisterUserToEventAsync(userId, Id);
+            IsAuthenticated = true;
 
-            // Refresh registered users
-            RegisteredUsers = (await EventUseCase.GetRegisteredUsersAsync(Id)).ToList();
+            if (user.IsInRole("Admin"))
+            {
+                IsAdmin = true;
+            }
+
+            if (user.IsInRole("Organizer"))
+            {
+                IsOrganizer = true;
+            }
+
+            var userId = user.FindFirst(System.Security.Claims.ClaimTypes.NameIdentifier)?.Value;
+            JoinModel = new JoinEventViewModel
+                {
+                    UserId = userId,
+                    Name = user.Identity.Name,
+                    EventId = Id
+                };
+
+            ReviewModel = new ReviewViewModel
+                {
+                    UserId = userId,
+                    UserName = user.Identity.Name,
+                    EventId = Id,
+                    Rating = 0,
+                    Comment = string.Empty
+                };
+
+            Event = await ViewEventByIdUseCase.ExecuteAsync(Id);
+            RegisteredUsers = await GetUsersByEventIdUseCase.ExecuteAsync(Id);
+            Reviews = await GetReviewsByEventIdUseCase.ExecuteAsync(Id);
+
+            IsUserRegistered = RegisteredUsers.Any(u => u.Name == user.Identity.Name);
+            JoinButtonText = IsUserRegistered ? "Unjoin" : "Join Event";
         }
         else
         {
-            NavigationManager.NavigateTo("/Account/Login");
+            Event = await ViewEventByIdUseCase.ExecuteAsync(Id);
+            RegisteredUsers = await GetUsersByEventIdUseCase.ExecuteAsync(Id);
+            Reviews = await GetReviewsByEventIdUseCase.ExecuteAsync(Id);
         }
     }
+
+    private async Task HandleJoinOrUnjoin()
+    {
+        if (IsUserRegistered)
+        {
+            await UnregisterUserFromEventUseCase.ExecuteAsync(new UserEvent
+                {
+                    UserId = JoinModel.UserId,
+                    EventId = JoinModel.EventId,
+                    Name = JoinModel.Name
+                });
+
+            IsUserRegistered = false;
+            JoinButtonText = "Join Event";
+        }
+        else
+        {
+            await RegisterUserToEventUseCase.ExecuteAsync(new UserEvent
+                {
+                    UserId = JoinModel.UserId,
+                    EventId = JoinModel.EventId,
+                    Name = JoinModel.Name
+                });
+
+            IsUserRegistered = true;
+            JoinButtonText = "Unjoin";
+        }
+
+        RegisteredUsers = await GetUsersByEventIdUseCase.ExecuteAsync(Id);
+    }
+
+    private async Task HandleAddReview()
+    {
+        if (ReviewModel != null)
+        {
+            ReviewModel.Rating = rating;
+            ReviewModel.Comment = comment;
+            await AddReviewUseCase.ExecuteAsync(new Review
+                {
+                    EventId = ReviewModel.EventId,
+                    UserId = ReviewModel.UserId,
+                    UserName = ReviewModel.UserName,
+                    Rating = ReviewModel.Rating,
+                    Comment = ReviewModel.Comment
+                });
+
+            Reviews = await GetReviewsByEventIdUseCase.ExecuteAsync(Id);
+
+            ReviewModel.Rating = 0;
+            ReviewModel.Comment = string.Empty;
+        }
+    }
+
+    private async Task HandleDeleteReview(int reviewId)
+    {
+        await DeleteReviewUseCase.ExecuteAsync(reviewId);
+        Reviews = await GetReviewsByEventIdUseCase.ExecuteAsync(Id);
+    }
 }
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+

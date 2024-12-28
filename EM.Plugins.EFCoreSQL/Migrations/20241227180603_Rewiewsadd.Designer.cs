@@ -12,8 +12,8 @@ using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 namespace EM.Plugins.EFCoreSQLServer.Migrations
 {
     [DbContext(typeof(EMContext))]
-    [Migration("20241225200131_FixUser")]
-    partial class FixUser
+    [Migration("20241227180603_Rewiewsadd")]
+    partial class Rewiewsadd
     {
         /// <inheritdoc />
         protected override void BuildTargetModel(ModelBuilder modelBuilder)
@@ -55,29 +55,9 @@ namespace EM.Plugins.EFCoreSQLServer.Migrations
                     b.HasKey("Id");
 
                     b.ToTable("Events");
-
-                    b.HasData(
-                        new
-                        {
-                            Id = 1,
-                            Description = "Tech trends 2024",
-                            EndDate = new DateTime(2024, 12, 26, 22, 1, 31, 70, DateTimeKind.Local).AddTicks(8616),
-                            Location = "Kyiv",
-                            StartDate = new DateTime(2024, 12, 25, 22, 1, 31, 69, DateTimeKind.Local).AddTicks(1718),
-                            Title = "Tech Conference"
-                        },
-                        new
-                        {
-                            Id = 2,
-                            Description = "Modern Art",
-                            EndDate = new DateTime(2024, 12, 31, 22, 1, 31, 70, DateTimeKind.Local).AddTicks(9046),
-                            Location = "Lviv",
-                            StartDate = new DateTime(2024, 12, 30, 22, 1, 31, 70, DateTimeKind.Local).AddTicks(9040),
-                            Title = "Art Expo"
-                        });
                 });
 
-            modelBuilder.Entity("EM.CoreBusiness.User", b =>
+            modelBuilder.Entity("EM.CoreBusiness.Review", b =>
                 {
                     b.Property<int>("Id")
                         .ValueGeneratedOnAdd()
@@ -85,61 +65,69 @@ namespace EM.Plugins.EFCoreSQLServer.Migrations
 
                     SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("Id"));
 
-                    b.Property<string>("Email")
+                    b.Property<string>("Comment")
                         .IsRequired()
                         .HasColumnType("nvarchar(max)");
 
-                    b.Property<string>("Name")
+                    b.Property<int>("EventId")
+                        .HasColumnType("int");
+
+                    b.Property<int>("Rating")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("int")
+                        .HasDefaultValue(0);
+
+                    b.Property<string>("UserId")
+                        .IsRequired()
+                        .HasColumnType("nvarchar(max)");
+
+                    b.Property<string>("UserName")
                         .IsRequired()
                         .HasColumnType("nvarchar(max)");
 
                     b.HasKey("Id");
 
-                    b.ToTable("Users");
+                    b.HasIndex("EventId");
 
-                    b.HasData(
-                        new
-                        {
-                            Id = 1,
-                            Email = "alice@example.com",
-                            Name = "Alice"
-                        },
-                        new
-                        {
-                            Id = 2,
-                            Email = "bob@example.com",
-                            Name = "Bob"
-                        });
+                    b.ToTable("Reviews");
                 });
 
-            modelBuilder.Entity("EM.CoreBusiness.UserEvents", b =>
+            modelBuilder.Entity("EM.CoreBusiness.UserEvent", b =>
                 {
-                    b.Property<int>("UserId")
+                    b.Property<int>("Id")
+                        .ValueGeneratedOnAdd()
                         .HasColumnType("int");
+
+                    SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("Id"));
 
                     b.Property<int>("EventId")
                         .HasColumnType("int");
 
-                    b.HasKey("UserId", "EventId");
+                    b.Property<string>("Name")
+                        .HasColumnType("nvarchar(max)");
+
+                    b.Property<string>("UserId")
+                        .HasColumnType("nvarchar(max)");
+
+                    b.HasKey("Id");
 
                     b.HasIndex("EventId");
 
                     b.ToTable("UserEvents");
-
-                    b.HasData(
-                        new
-                        {
-                            UserId = 1,
-                            EventId = 1
-                        },
-                        new
-                        {
-                            UserId = 2,
-                            EventId = 1
-                        });
                 });
 
-            modelBuilder.Entity("EM.CoreBusiness.UserEvents", b =>
+            modelBuilder.Entity("EM.CoreBusiness.Review", b =>
+                {
+                    b.HasOne("EM.CoreBusiness.Event", "Event")
+                        .WithMany("Reviews")
+                        .HasForeignKey("EventId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+
+                    b.Navigation("Event");
+                });
+
+            modelBuilder.Entity("EM.CoreBusiness.UserEvent", b =>
                 {
                     b.HasOne("EM.CoreBusiness.Event", "Event")
                         .WithMany("UserEvents")
@@ -147,24 +135,13 @@ namespace EM.Plugins.EFCoreSQLServer.Migrations
                         .OnDelete(DeleteBehavior.Cascade)
                         .IsRequired();
 
-                    b.HasOne("EM.CoreBusiness.User", "User")
-                        .WithMany("UserEvents")
-                        .HasForeignKey("UserId")
-                        .OnDelete(DeleteBehavior.Cascade)
-                        .IsRequired();
-
                     b.Navigation("Event");
-
-                    b.Navigation("User");
                 });
 
             modelBuilder.Entity("EM.CoreBusiness.Event", b =>
                 {
-                    b.Navigation("UserEvents");
-                });
+                    b.Navigation("Reviews");
 
-            modelBuilder.Entity("EM.CoreBusiness.User", b =>
-                {
                     b.Navigation("UserEvents");
                 });
 #pragma warning restore 612, 618

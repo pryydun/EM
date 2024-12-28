@@ -1,0 +1,143 @@
+﻿@page "/users"
+@using EM.WebApp.Components.Pages.ViewModel
+@using EM.WebApp.Data
+@using Microsoft.EntityFrameworkCore
+@inject ApplicationDbContext DbContext
+@inject NavigationManager NavigationManager
+@inject IRemoveUserEventsUseCase RemoveUserEventsUseCase
+@inject AuthenticationStateProvider AuthenticationStateProvider
+
+<h3>All Users</h3>
+
+@if (UserList == null)
+
+{
+    <p>Loading...</p>
+}
+
+else if (!UserList.Any())
+
+{
+    <p>No users found.</p>
+}
+
+else
+
+{
+    <table class="table">
+        <thead>
+            <tr>
+                <th>Name</th>
+                <th>Email</th>
+                <th>Actions</th>
+            </tr>
+        </thead>
+        <tbody>
+            @foreach (var user in UserList)
+
+            {
+                <tr>
+                    <td>@user.Name</td>
+                    <td>@user.Email</td>
+                    <td>
+                        <div class="btn-group" role="group">
+                            <a href="/user-profile/@user.Id" class="btn btn-primary">Go to Profile</a>
+                            @if (IsAdminUser)
+                            {
+                                <EditForm Model="user"
+                                          FormName="@($"form-delete-user-{user.Id}")"
+                                          OnValidSubmit="@(() => DeleteUser(user.Id))">
+                                    <button type="submit" class="btn btn-danger">Delete</button>
+                                </EditForm>
+                            }
+                        </div>
+                    </td>
+                </tr>
+            }
+        </tbody>
+    </table>
+}
+
+@code {
+    private List<UserViewModel> UserList = new();
+
+    private bool IsAdminUser;
+
+
+
+    protected override async Task OnInitializedAsync()
+
+    {
+
+        // Отримуємо поточний стан автентифікації
+
+        var authState = await AuthenticationStateProvider.GetAuthenticationStateAsync();
+
+        var user = authState.User;
+
+
+
+        // Перевіряємо, чи користувач має роль адміністратора
+
+        IsAdminUser = user.HasClaim(c => c.Type == "role" && c.Value == "Admin");
+
+
+
+        // Отримуємо список користувачів із бази даних
+
+        UserList = await DbContext.Users
+
+            .Select(u => new UserViewModel
+                {
+                    Id = u.Id,
+                    Name = u.UserName,
+                    Email = u.Email
+                })
+
+            .ToListAsync();
+
+    }
+
+
+
+    private async Task DeleteUser(string userId)
+
+    {
+
+        await RemoveUserEventsUseCase.ExecuteAsync(userId);
+
+
+
+        var user = await DbContext.Users.FirstOrDefaultAsync(u => u.Id == userId);
+
+        if (user != null)
+
+        {
+
+            DbContext.Users.Remove(user);
+
+            await DbContext.SaveChangesAsync();
+
+        }
+
+
+
+        // Оновлюємо список користувачів
+
+        UserList = await DbContext.Users
+
+            .Select(u => new UserViewModel
+                {
+                    Id = u.Id,
+                    Name = u.UserName,
+                    Email = u.Email
+                })
+
+            .ToListAsync();
+
+    }
+}
+
+
+
+     

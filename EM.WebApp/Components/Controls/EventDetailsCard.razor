@@ -1,0 +1,16 @@
+﻿@using EM.WebApp.Components.Pages.ViewModel
+
+<div class="card">
+    <div class="card-body">
+        <h4 class="card-title">@Event.Title</h4>
+        <p class="card-text"><strong>Description:</strong> @Event.Description</p>
+        <p class="card-text"><strong>Start Date:</strong> @Event.StartDate.ToString("f")</p>
+        <p class="card-text"><strong>End Date:</strong> @Event.EndDate.ToString("f")</p>
+        <p class="card-text"><strong>Location:</strong> @Event.Location</p>
+    </div>
+</div>
+
+@code {
+    [Parameter]
+    public EventViewModel Event { get; set; } = default!;
+}

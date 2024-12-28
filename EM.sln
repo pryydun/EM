@@ -11,9 +11,7 @@ Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "EM.CoreBusiness", "EM.CoreB
 EndProject
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "EM.Plugins", "EM.Plugins", "{8BF5DEFE-C007-4BFB-941D-AC38879212B9}"
 EndProject
-Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "EM.Plugins.InMemory", "EM.Plugins\EM.Plugins.InMemory\EM.Plugins.InMemory.csproj", "{000D6858-A608-40FA-8473-2ECC048B2155}"
-EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "EM.Plugins.EFCoreSQLServer", "EM.Plugins.EFCoreSQL\EM.Plugins.EFCoreSQLServer.csproj", "{B1790BF5-D288-49D8-BAD4-D9885DA2F892}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "EM.Plugins.EFCoreSQLServer", "EM.Plugins.EFCoreSQL\EM.Plugins.EFCoreSQLServer.csproj", "{B1790BF5-D288-49D8-BAD4-D9885DA2F892}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
@@ -33,10 +31,6 @@ Global
 		{92B75782-6872-4281-BE9B-10054ED35E3A}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{92B75782-6872-4281-BE9B-10054ED35E3A}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{92B75782-6872-4281-BE9B-10054ED35E3A}.Release|Any CPU.Build.0 = Release|Any CPU
-		{000D6858-A608-40FA-8473-2ECC048B2155}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
-		{000D6858-A608-40FA-8473-2ECC048B2155}.Debug|Any CPU.Build.0 = Debug|Any CPU
-		{000D6858-A608-40FA-8473-2ECC048B2155}.Release|Any CPU.ActiveCfg = Release|Any CPU
-		{000D6858-A608-40FA-8473-2ECC048B2155}.Release|Any CPU.Build.0 = Release|Any CPU
 		{B1790BF5-D288-49D8-BAD4-D9885DA2F892}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
 		{B1790BF5-D288-49D8-BAD4-D9885DA2F892}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{B1790BF5-D288-49D8-BAD4-D9885DA2F892}.Release|Any CPU.ActiveCfg = Release|Any CPU
@@ -46,7 +40,6 @@ Global
 		HideSolutionNode = FALSE
 	EndGlobalSection
 	GlobalSection(NestedProjects) = preSolution
-		{000D6858-A608-40FA-8473-2ECC048B2155} = {8BF5DEFE-C007-4BFB-941D-AC38879212B9}
 		{B1790BF5-D288-49D8-BAD4-D9885DA2F892} = {8BF5DEFE-C007-4BFB-941D-AC38879212B9}
 	EndGlobalSection
 	GlobalSection(ExtensibilityGlobals) = postSolution

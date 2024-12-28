@@ -1,0 +1,120 @@
+﻿ @page "/my-profile"
+@using EM.WebApp.Components.Pages.ViewModel
+@using EM.WebApp.Data
+@using EM_UseCases.PluginInterfaces
+@using Microsoft.EntityFrameworkCore
+@inject IUserEventRepository UserEventRepository
+@inject ApplicationDbContext DbContext
+@inject AuthenticationStateProvider AuthenticationStateProvider
+@inject IUnregisterUserFromEventUseCase UnregisterUserFromEventUseCase
+
+<h3>My Profile</h3>
+@attribute [Authorize(Policy = "AdminPolicy")]
+@if (User == null)
+{
+    <p>Loading user ...</p>
+}
+else
+{
+    <div class="card">
+        <div class="card-body">
+            <h4 class="card-title">@User.Name</h4>
+            <p><strong>Email:</strong> @User.Email</p>
+        </div>
+    </div>
+
+    <h5>Registered Events</h5>
+    @if (RegisteredEvents == null || !RegisteredEvents.Any())
+    {
+        <p>No registered events found for this user.</p>
+    }
+    else
+    {
+        <ul class="list-group">
+            @foreach (var eventItem in RegisteredEvents)
+            {
+                <li class="list-group-item d-flex justify-content-between align-items-center">
+                    <div>
+                        <strong>@eventItem.Title</strong> <br />
+                        <span>@eventItem.StartDate.ToString("f") to @eventItem.EndDate.ToString("f")</span>
+                    </div>
+                    <div>
+                        <a href="/event-details/@eventItem.Id" class="btn btn-link">View Details</a>
+                        <EditForm Model="eventItem" FormName="Prifile" OnValidSubmit="() => UnjoinEvent(eventItem.Id)">
+                            <button type="submit" class="btn btn-danger btn-sm">Unjoin</button>
+                        </EditForm>
+                    </div>
+                </li>
+            }
+        </ul>
+    }
+
+    <a href="/events" class="btn btn-primary mt-3">Back to Events</a>
+}
+
+@code {
+    private UserViewModel? User;
+    private List<EventViewModel> RegisteredEvents = new();
+
+    protected override async Task OnInitializedAsync()
+    {
+        // Get the currently authenticated user
+        var authState = await AuthenticationStateProvider.GetAuthenticationStateAsync();
+        var user = authState.User;
+
+        if (user?.Identity?.IsAuthenticated == true)
+        {
+            var userId = user.FindFirst(System.Security.Claims.ClaimTypes.NameIdentifier)?.Value;
+
+            // Get user information
+            User = await DbContext.Users
+                .Where(u => u.Id == userId)
+                .Select(u => new UserViewModel
+                    {
+                        Id = u.Id,
+                        Name = u.UserName,
+                        Email = u.Email
+                    })
+                .FirstOrDefaultAsync();
+
+            // Get events for the authenticated user
+            var events = await UserEventRepository.GetEventsByUserIdAsync(userId);
+
+            // Map events to EventViewModel
+            RegisteredEvents = events.Select(e => new EventViewModel
+                {
+                    Id = e.Id,
+                    Title = e.Title,
+                    StartDate = e.StartDate,
+                    EndDate = e.EndDate,
+                    Location = e.Location
+                }).ToList();
+        }
+        else
+        {
+            User = null;
+        }
+    }
+
+    private async Task UnjoinEvent(int eventId)
+    {
+        var authState = await AuthenticationStateProvider.GetAuthenticationStateAsync();
+        var user = authState.User;
+
+        if (user?.Identity?.IsAuthenticated == true)
+        {
+            var userId = user.FindFirst(System.Security.Claims.ClaimTypes.NameIdentifier)?.Value;
+
+            if (!string.IsNullOrEmpty(userId))
+            {
+                await UnregisterUserFromEventUseCase.ExecuteAsync(new UserEvent
+                    {
+                        UserId = userId,
+                        EventId = eventId
+                    });
+
+                RegisteredEvents.RemoveAll(e => e.Id == eventId);
+            }
+        }
+    }
+}

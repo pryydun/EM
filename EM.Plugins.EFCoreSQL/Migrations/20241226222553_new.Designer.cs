@@ -4,6 +4,7 @@ using EM.Plugins.EFCoreSQL;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Infrastructure;
 using Microsoft.EntityFrameworkCore.Metadata;
+using Microsoft.EntityFrameworkCore.Migrations;
 using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 
 #nullable disable
@@ -11,9 +12,11 @@ using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 namespace EM.Plugins.EFCoreSQLServer.Migrations
 {
     [DbContext(typeof(EMContext))]
-    partial class EMContextModelSnapshot : ModelSnapshot
+    [Migration("20241226222553_new")]
+    partial class @new
     {
-        protected override void BuildModel(ModelBuilder modelBuilder)
+        /// <inheritdoc />
+        protected override void BuildTargetModel(ModelBuilder modelBuilder)
         {
 #pragma warning disable 612, 618
             modelBuilder
@@ -54,41 +57,6 @@ namespace EM.Plugins.EFCoreSQLServer.Migrations
                     b.ToTable("Events");
                 });
 
-            modelBuilder.Entity("EM.CoreBusiness.Review", b =>
-                {
-                    b.Property<int>("Id")
-                        .ValueGeneratedOnAdd()
-                        .HasColumnType("int");
-
-                    SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("Id"));
-
-                    b.Property<string>("Comment")
-                        .IsRequired()
-                        .HasColumnType("nvarchar(max)");
-
-                    b.Property<int>("EventId")
-                        .HasColumnType("int");
-
-                    b.Property<int>("Rating")
-                        .ValueGeneratedOnAdd()
-                        .HasColumnType("int")
-                        .HasDefaultValue(0);
-
-                    b.Property<string>("UserId")
-                        .IsRequired()
-                        .HasColumnType("nvarchar(max)");
-
-                    b.Property<string>("UserName")
-                        .IsRequired()
-                        .HasColumnType("nvarchar(max)");
-
-                    b.HasKey("Id");
-
-                    b.HasIndex("EventId");
-
-                    b.ToTable("Reviews");
-                });
-
             modelBuilder.Entity("EM.CoreBusiness.UserEvent", b =>
                 {
                     b.Property<int>("Id")
@@ -113,32 +81,17 @@ namespace EM.Plugins.EFCoreSQLServer.Migrations
                     b.ToTable("UserEvents");
                 });
 
-            modelBuilder.Entity("EM.CoreBusiness.Review", b =>
-                {
-                    b.HasOne("EM.CoreBusiness.Event", "Event")
-                        .WithMany("Reviews")
-                        .HasForeignKey("EventId")
-                        .OnDelete(DeleteBehavior.Cascade)
-                        .IsRequired();
-
-                    b.Navigation("Event");
-                });
-
             modelBuilder.Entity("EM.CoreBusiness.UserEvent", b =>
                 {
-                    b.HasOne("EM.CoreBusiness.Event", "Event")
+                    b.HasOne("EM.CoreBusiness.Event", null)
                         .WithMany("UserEvents")
                         .HasForeignKey("EventId")
                         .OnDelete(DeleteBehavior.Cascade)
                         .IsRequired();
-
-                    b.Navigation("Event");
                 });
 
             modelBuilder.Entity("EM.CoreBusiness.Event", b =>
                 {
-                    b.Navigation("Reviews");
-
                     b.Navigation("UserEvents");
                 });
 #pragma warning restore 612, 618

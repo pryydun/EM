@@ -8,7 +8,18 @@
   </PropertyGroup>
 
   <ItemGroup>
+    <Compile Remove="NewFolder1\**" />
+    <EmbeddedResource Remove="NewFolder1\**" />
+    <None Remove="NewFolder1\**" />
+  </ItemGroup>
+
+  <ItemGroup>
     <ProjectReference Include="..\EM.CoreBusiness\EM.CoreBusiness.csproj" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <Folder Include="EM_UseCases\" />
+    <Folder Include="NewFolder\" />
   </ItemGroup>
 
 </Project>

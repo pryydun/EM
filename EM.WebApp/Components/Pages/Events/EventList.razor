@@ -1,28 +1,41 @@
 ﻿@page "/events"
 @inject IViewEventsByNameUseCase ViewEventsByNameUseCase
+@inject AuthenticationStateProvider AuthenticationStateProvider
 
 <h3>EventList</h3>
 
 <SearchComponent OnSearch="HandleSearch"></SearchComponent>
-<br/>
+<br />
 
 <EventListComponent SearchEventFilter="@searchEventName"></EventListComponent>
-<br/>
+<br />
 
-<div class="d-flex justify-content-start mb-3">
-    <a href="/add-event" class="btn btn-success btn-lg">Add Event</a>
-</div>
+@if (IsAdmin || IsOrganizer)
+{
+    <div class="d-flex justify-content-start mb-3">
+        <a href="/add-event" class="btn btn-success btn-lg">Add Event</a>
+    </div>
+}
 
 @code {
-   
-
     private string? searchEventName;
+    private bool IsAdmin { get; set; } = false;
+    private bool IsOrganizer { get; set; } = false;
 
-   
+    protected override async Task OnInitializedAsync()
+    {
+        var authState = await AuthenticationStateProvider.GetAuthenticationStateAsync();
+        var user = authState.User;
+
+        if (user?.Identity?.IsAuthenticated == true)
+        {
+            IsAdmin = user.IsInRole("Admin");
+            IsOrganizer = user.IsInRole("Organizer");
+        }
+    }
 
     private void HandleSearch(string searchFilter)
     {
         searchEventName = searchFilter;
     }
-
 }

@@ -1,0 +1,124 @@
+﻿@page "/user-profile/{UserId}"
+@using EM.WebApp.Components.Pages.ViewModel
+@using EM.WebApp.Data
+@using EM_UseCases.PluginInterfaces
+@using Microsoft.EntityFrameworkCore
+@inject IUserEventRepository UserEventRepository
+@inject ApplicationDbContext DbContext
+
+<h3>User Profile</h3>
+
+@if (User == null)
+
+{
+    <p>Loading user details...</p>
+}
+
+else
+
+{
+    <div class="card">
+        <div class="card-body">
+            <h4 class="card-title">@User.Name</h4>
+            <p><strong>Email:</strong> @User.Email</p>
+        </div>
+    </div>
+
+    <h5>Registered Events</h5>
+    @if (RegisteredEvents == null || !RegisteredEvents.Any())
+
+    {
+        <p>No registered events found for this user.</p>
+    }
+
+    else
+
+    {
+        <ul class="list-group">
+            @foreach (var eventItem in RegisteredEvents)
+
+            {
+                <li class="list-group-item">
+                    <strong>@eventItem.Title</strong> - @eventItem.StartDate.ToString("f") to @eventItem.EndDate.ToString("f")
+                    <a href="/event-details/@eventItem.Id" class="btn btn-link">View Details</a>
+                </li>
+            }
+             <a href="/events" class="btn btn-primary mt-3">To Events</a>
+        </ul>
+
+
+
+    }
+}
+
+@code {
+    [Parameter]
+
+    public string? UserId { get; set; }
+
+
+
+    private UserViewModel? User;
+
+
+
+    private List<EventViewModel> RegisteredEvents = new();
+
+
+
+
+
+
+
+    protected override async Task OnInitializedAsync()
+
+    {
+
+        // Отримуємо інформацію про користувача
+
+        User = await DbContext.Users
+
+            .Where(u => u.Id == UserId)
+
+            .Select(u => new UserViewModel
+
+                {
+
+                    Id = u.Id,
+
+                    Name = u.UserName,
+
+                    Email = u.Email
+
+                })
+
+            .FirstOrDefaultAsync();
+
+
+
+        // Отримуємо події через репозиторій
+
+        var events = await UserEventRepository.GetEventsByUserIdAsync(UserId);
+
+
+
+        // Перетворюємо Event у EventViewModel
+
+        RegisteredEvents = events.Select(e => new EventViewModel
+
+            {
+
+                Id = e.Id,
+
+                Title = e.Title,
+
+                StartDate = e.StartDate,
+
+                EndDate = e.EndDate,
+
+                Location = e.Location
+
+            }).ToList();
+
+    }
+}

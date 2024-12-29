@@ -1,17 +1,15 @@
 ﻿@page "/add-event"
+@attribute [Authorize(Policy = "OrganizerOrAdminPolicy")]
 @using EM.CoreBusiness
 @using EM.WebApp.Components.Pages.ViewModel
 @inject IAddEventsUseCase AddEventsUseCase
 @inject NavigationManager NavigationManager
 
 <h3>Add Event</h3>
- 
-<EditForm Model="newEvent" OnValidSubmit="Save" Formname="AddEventForm">
 
+<EditForm Model="newEvent" OnValidSubmit="Save" Formname="AddEventForm">
     <DataAnnotationsValidator />
-    
-    
-    
+
     <div class="form-group">
         <label for="eventTitle">Event Title</label>
         <InputText id="eventTitle" @bind-Value="newEvent.Title" class="form-control" />
@@ -54,19 +52,17 @@
     {
         var ev = new Event
             {
-
                 Id = newEvent.Id,
                 Title = newEvent.Title,
                 Description = newEvent.Description,
                 StartDate = newEvent.StartDate,
                 EndDate = newEvent.EndDate,
                 Location = newEvent.Location
-
-
             };
+
         await AddEventsUseCase.ExecuteAsync(ev);
         NavigationManager.NavigateTo("/events");
     }
-   
 }
+
 

@@ -9,10 +9,10 @@
 @inject IUnregisterUserFromEventUseCase UnregisterUserFromEventUseCase
 
 <h3>My Profile</h3>
-@attribute [Authorize(Policy = "AdminPolicy")]
 @if (User == null)
 {
-    <p>Loading user ...</p>
+     
+    <a href="/Account/Login" class="btn btn-primary mt-3">Login</a>
 }
 else
 {

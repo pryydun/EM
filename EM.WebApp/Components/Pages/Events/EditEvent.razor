@@ -4,7 +4,7 @@
 @inject IEditEventUseCase EditEventUseCase
 @inject IViewEventByIdUseCase ViewEventByIdUseCase
 @inject NavigationManager NavigationManager
-
+@attribute [Authorize(Policy = "OrganizerOrAdminPolicy")]
 <h3>Edit Event</h3>
 
 @if (eventToEdit != null)

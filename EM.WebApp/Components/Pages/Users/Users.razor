@@ -45,7 +45,7 @@ else
                             @if (IsAdminUser)
                             {
                                 <EditForm Model="user"
-                                          FormName="@($"form-delete-user-{user.Id}")"
+                                          FormName=""deluser"
                                           OnValidSubmit="@(() => DeleteUser(user.Id))">
                                     <button type="submit" class="btn btn-danger">Delete</button>
                                 </EditForm>
@@ -60,6 +60,8 @@ else
 
 @code {
     private List<UserViewModel> UserList = new();
+
+
 
     private bool IsAdminUser;
 

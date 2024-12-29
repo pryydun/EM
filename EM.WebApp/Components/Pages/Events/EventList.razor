@@ -10,7 +10,7 @@
 <EventListComponent SearchEventFilter="@searchEventName"></EventListComponent>
 <br />
 
-@if (IsAdmin || IsOrganizer)
+@if (CanAddEvent)
 {
     <div class="d-flex justify-content-start mb-3">
         <a href="/add-event" class="btn btn-success btn-lg">Add Event</a>
@@ -19,18 +19,16 @@
 
 @code {
     private string? searchEventName;
-    private bool IsAdmin { get; set; } = false;
-    private bool IsOrganizer { get; set; } = false;
+    private bool CanAddEvent { get; set; } = false;
 
     protected override async Task OnInitializedAsync()
     {
         var authState = await AuthenticationStateProvider.GetAuthenticationStateAsync();
         var user = authState.User;
 
-        if (user?.Identity?.IsAuthenticated == true)
+        if (user.Identity?.IsAuthenticated == true)
         {
-            IsAdmin = user.IsInRole("Admin");
-            IsOrganizer = user.IsInRole("Organizer");
+            CanAddEvent = user.HasClaim("role", "Admin") || user.HasClaim("role", "Organizer");
         }
     }
 
@@ -39,3 +37,4 @@
         searchEventName = searchFilter;
     }
 }
+

@@ -20,7 +20,9 @@ namespace EM.CoreBusiness
         [Required(ErrorMessage = "Location is required.")]
         public string Location { get; set; } = string.Empty; // Локація
 
+
         public ICollection<UserEvent> UserEvents { get; set; } = new List<UserEvent>();
         public ICollection<Review> Reviews { get; set; } = new List<Review>();
+
     }
 }

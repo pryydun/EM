@@ -45,6 +45,8 @@ builder.Services.AddAuthorization(options =>
     options.AddPolicy("ParticipantPolicy", policy => policy.RequireClaim("role", "Participant"));
     options.AddPolicy("OrganizerPolicy", policy => policy.RequireClaim("role", "Organizer"));
     options.AddPolicy("AdminPolicy", policy => policy.RequireClaim("role", "Admin"));
+    options.AddPolicy("OrganizerOrAdminPolicy", policy => policy.RequireClaim("role", "Organizer", "Admin"));
+ 
 });
 builder.Services.AddAuthentication(options =>
 {

@@ -4,50 +4,92 @@
 @using EM.WebApp.Components.Pages.ViewModel
 @inject IAddEventsUseCase AddEventsUseCase
 @inject NavigationManager NavigationManager
-
+@inject IWebHostEnvironment _webHostEnvironment
 <h3>Add Event</h3>
 
-<EditForm Model="newEvent" OnValidSubmit="Save" Formname="AddEventForm">
-    <DataAnnotationsValidator />
+<div class="container p-5" style="max-width: 600px; margin: 0 auto; background-color: #f9f9f9; border-radius: 8px; box-shadow: 0px 4px 8px rgba(0, 0, 0, 0.1);">
+    <h3 class="text-center mb-4" style="color: #333;">Add Event</h3>
+    <EditForm Model="newEvent" OnValidSubmit="Save" Formname="AddEventForm">
+        <DataAnnotationsValidator />
 
-    <div class="form-group">
-        <label for="eventTitle">Event Title</label>
-        <InputText id="eventTitle" @bind-Value="newEvent.Title" class="form-control" />
-        <ValidationMessage For="@(() => newEvent.Title)" />
-    </div>
+        <div class="form-group mb-3">
+            <label for="eventTitle" style="font-weight: bold; color: #555;">Event Title</label>
+            <InputText id="eventTitle" @bind-Value="newEvent.Title" class="form-control" style="border: 1px solid #ddd; border-radius: 6px;" />
+            <ValidationMessage For="@(() => newEvent.Title)" class="text-danger" />
+        </div>
 
-    <div class="form-group">
-        <label for="eventDescription">Event Description</label>
-        <InputTextArea id="eventDescription" @bind-Value="newEvent.Description" class="form-control" />
-        <ValidationMessage For="@(() => newEvent.Description)" />
-    </div>
+        <div class="form-group mb-3">
+            <label for="eventDescription" style="font-weight: bold; color: #555;">Event Description</label>
+            <InputTextArea id="eventDescription" @bind-Value="newEvent.Description" class="form-control" style="border: 1px solid #ddd; border-radius: 6px;" />
+            <ValidationMessage For="@(() => newEvent.Description)" class="text-danger" />
+        </div>
 
-    <div class="form-group">
-        <label for="eventStartDate">Start Date</label>
-        <InputDate id="eventStartDate" @bind-Value="newEvent.StartDate" class="form-control" />
-        <ValidationMessage For="@(() => newEvent.StartDate)" />
-    </div>
+        <div class="form-group mb-3">
+            <label for="eventStartDate" style="font-weight: bold; color: #555;">Start Date</label>
+            <InputDate id="eventStartDate" @bind-Value="newEvent.StartDate" class="form-control" style="border: 1px solid #ddd; border-radius: 6px;" />
+            <ValidationMessage For="@(() => newEvent.StartDate)" class="text-danger" />
+        </div>
 
-    <div class="form-group">
-        <label for="eventEndDate">End Date</label>
-        <InputDate id="eventEndDate" @bind-Value="newEvent.EndDate" class="form-control" />
-        <ValidationMessage For="@(() => newEvent.EndDate)" />
-    </div>
+        <div class="form-group mb-3">
+            <label for="eventEndDate" style="font-weight: bold; color: #555;">End Date</label>
+            <InputDate id="eventEndDate" @bind-Value="newEvent.EndDate" class="form-control" style="border: 1px solid #ddd; border-radius: 6px;" />
+            <ValidationMessage For="@(() => newEvent.EndDate)" class="text-danger" />
+        </div>
 
-    <div class="form-group">
-        <label for="eventLocation">Location</label>
-        <InputText id="eventLocation" @bind-Value="newEvent.Location" class="form-control" />
-        <ValidationMessage For="@(() => newEvent.Location)" />
-    </div>
-    <br />
-    <button type="submit" class="btn btn-primary">Save</button>
-    <a href="/events" class="btn btn-secondary">Cancel</a>
-</EditForm>
+        <div class="form-group mb-3">
+            <label for="eventLocation" style="font-weight: bold; color: #555;">Location</label>
+            <InputText id="eventLocation" @bind-Value="newEvent.Location" class="form-control" style="border: 1px solid #ddd; border-radius: 6px;" />
+            <ValidationMessage For="@(() => newEvent.Location)" class="text-danger" />
+        </div>
+
+        <div class="form-group mb-3">
+            <label for="eventImage" style="font-weight: bold; color: #555;">Event Image</label>
+            <InputFile id="eventImage" OnChange="UploadImage" class="form-control" style="border: 1px solid #ddd; border-radius: 6px;" />
+        </div>
+
+        <div class="d-flex justify-content-between">
+            <button type="submit" class="btn" style="background-color: #007bff; color: white; border-radius: 6px; padding: 10px 20px;">Save</button>
+            <a href="/events" class="btn" style="background-color: #6c757d; color: white; border-radius: 6px; padding: 10px 20px;">Cancel</a>
+        </div>
+    </EditForm>
+</div>
+ 
 
 @code {
     [SupplyParameterFromForm]
     private EventViewModel newEvent { get; set; } = new EventViewModel();
+    private string? imagePath;
+    private string? directoryPath;
 
+    
+
+  
+        private async Task UploadImage(InputFileChangeEventArgs e)
+        {
+            var file = e.File;
+            if (file != null)
+            {
+                
+                var uniqueFileName = $"{Guid.NewGuid()}_{file.Name}";
+            var directoryPath = Path.Combine("wwwroot", "uploads");
+            
+            var filePath = Path.Combine(directoryPath, uniqueFileName);
+
+                 
+               
+                if (!Directory.Exists(directoryPath))
+                {
+                    Directory.CreateDirectory(directoryPath);
+                }
+
+                
+                using var fileStream = new FileStream(filePath, FileMode.Create);
+                await file.OpenReadStream(file.Size).CopyToAsync(fileStream);
+
+                // Зберігаємо шлях до зображення для використання в моделі
+                imagePath = $"/uploads/{uniqueFileName}";
+            }
+        }
     private async Task Save()
     {
         var ev = new Event
@@ -57,7 +99,8 @@
                 Description = newEvent.Description,
                 StartDate = newEvent.StartDate,
                 EndDate = newEvent.EndDate,
-                Location = newEvent.Location
+                Location = newEvent.Location,
+                ImagePath = imagePath
             };
 
         await AddEventsUseCase.ExecuteAsync(ev);
@@ -66,3 +109,9 @@
 }
 
 
+
+
+
+
+
+ 

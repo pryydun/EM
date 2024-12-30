@@ -1,0 +1,113 @@
+﻿@page "/Account/ManageUser/{userid}"
+@using EM.WebApp.Data
+@using Microsoft.AspNetCore.Identity
+@using System.Security.Claims
+@using System.ComponentModel.DataAnnotations
+
+@attribute [Authorize(Policy = "AdminPolicy")]
+
+@inject UserManager<ApplicationUser> UserManager
+@inject NavigationManager NavigationManager
+
+<h3>Manage User</h3>
+<br />
+@if (viewModel is not null)
+{
+    <EditForm FormName="formManageUser" Model="viewModel" OnValidSubmit="SaveUser">
+        <DataAnnotationsValidator></DataAnnotationsValidator>
+        <ValidationSummary></ValidationSummary>
+
+        <div class="form-group">
+            <label for="email">Email</label>
+            <input id="email"
+                   type="text"
+                   class="form-control"
+                   readonly
+                   value="@viewModel.Email" />
+        </div>
+        <br />
+        <div class="form-group">
+            <label for="role">Role</label>
+            <InputSelect id="role" @bind-Value="viewModel.Role" class="form-control">
+                <option value="">-- Select Role --</option>
+                @foreach (var role in roles)
+                {
+                    <option value="@role">@role</option>
+                }
+            </InputSelect>
+        </div>
+        <br />
+        <button type="submit" class="btn btn-primary">Save</button>
+        <a href="/account/manageusers" class="btn btn-secondary">Cancel</a>
+    </EditForm>
+}
+
+@code {
+    [Parameter]
+    public string? UserId { get; set; }
+
+    private const string RoleClaimType = "role";
+
+    private ApplicationUser? user;
+    private Claim? roleClaim;
+    private bool userHadRole = true;
+
+    [SupplyParameterFromForm]
+    private ManageUserViewModel? viewModel { get; set; }
+
+    private List<string> roles = new()
+    {
+        "Guest",
+        "Participant",
+        "Organizer",
+        "Admin"
+    };
+
+    protected override async Task OnParametersSetAsync()
+    {
+        user = UserManager.Users.FirstOrDefault(x => x.Id == this.UserId);
+        if (user is null)
+        {
+            NavigationManager.NavigateTo("/account/manageusers");
+            return;
+        }
+
+        var claims = await UserManager.GetClaimsAsync(user);
+        roleClaim = claims.FirstOrDefault(x => x.Type == RoleClaimType);
+        if (roleClaim is null)
+        {
+            userHadRole = false;
+            roleClaim = new Claim(RoleClaimType, string.Empty);
+        }
+
+        viewModel ??= new ManageUserViewModel
+            {
+                Email = user.Email,
+                Role = roleClaim.Value
+            };
+    }
+
+    private async Task SaveUser()
+    {
+        if (user is null || roleClaim is null) return;
+
+        if (userHadRole)
+        {
+            await UserManager.ReplaceClaimAsync(user, roleClaim, new Claim(RoleClaimType, viewModel?.Role ?? string.Empty));
+        }
+        else
+        {
+            await UserManager.AddClaimAsync(user, new Claim(RoleClaimType, viewModel?.Role ?? string.Empty));
+        }
+
+        NavigationManager.NavigateTo("/account/manageusers");
+    }
+
+    public class ManageUserViewModel
+    {
+        public string? Email { get; set; }
+
+        [Required(ErrorMessage = "Role is required.")]
+        public string? Role { get; set; }
+    }
+}

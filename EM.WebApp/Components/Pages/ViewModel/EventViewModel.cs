@@ -1,4 +1,5 @@
 ﻿using EM.CoreBusiness;
+using Microsoft.AspNetCore.Components.Forms;
 using System.ComponentModel.DataAnnotations;
 
 namespace EM.WebApp.Components.Pages.ViewModel
@@ -21,7 +22,9 @@ namespace EM.WebApp.Components.Pages.ViewModel
         [Required(ErrorMessage = "Location is required.")]
         public string Location { get; set; } = string.Empty; // Локація
 
-         
+        
+       
+
     }
 }
 

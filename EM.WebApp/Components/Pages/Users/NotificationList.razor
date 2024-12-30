@@ -1,0 +1,81 @@
+﻿@page "/notifications"
+
+@using Microsoft.AspNetCore.Identity
+@inject NotificationService NotificationService
+@inject AuthenticationStateProvider AuthenticationStateProvider
+
+<h3>Your Notifications</h3>
+
+@if (Notifications == null)
+{
+    <p>Loading...</p>
+}
+else if (!Notifications.Any())
+{
+    <p>You have no notifications.</p>
+}
+else
+{
+    <div>
+        @foreach (var notification in Notifications)
+        {
+            <div style="border: 1px solid #ccc; border-radius: 5px; padding: 1rem; margin-bottom: 1rem; background-color: @(notification.IsRead ? "#e7f7e7" : "#ffe5e5");">
+                <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 0.5rem;">
+                    <h5 style="margin: 0;">@notification.Title</h5>
+                    <small>@notification.CreatedAt.ToLocalTime()</small>
+                </div>
+                <p style="margin: 0 0 1rem;">@notification.Message</p>
+                <div style="display: flex; gap: 0.5rem;">
+                    @if (!notification.IsRead)
+                    {
+                        <EditForm Model="notification" FormName="@($"notification-form-{notification.Id}")" OnValidSubmit="@(() => MarkAsRead(notification.Id))">
+                            <button type="submit" style="background-color: #007bff; color: white; border: none; border-radius: 3px; padding: 0.5rem 1rem; cursor: pointer;">
+                                Mark as Read
+                            </button>
+                        </EditForm>
+                    }
+                    <EditForm Model="notification" FormName="@($"delete-form-{notification.Id}")" OnValidSubmit="@(() => DeleteNotification(notification.Id))">
+                        <button type="submit" style="background-color: #dc3545; color: white; border: none; border-radius: 3px; padding: 0.5rem 1rem; cursor: pointer;">
+                            Delete
+                        </button>
+                    </EditForm>
+                </div>
+            </div>
+        }
+    </div>
+}
+
+@code {
+    private List<Notification> Notifications;
+
+    protected override async Task OnInitializedAsync()
+    {
+        var authState = await AuthenticationStateProvider.GetAuthenticationStateAsync();
+        var user = authState.User;
+
+        // Отримуємо ID поточного користувача
+        var userId = user.FindFirst(System.Security.Claims.ClaimTypes.NameIdentifier)?.Value;
+
+        Notifications = await NotificationService.GetNotificationsAsync(userId);
+    }
+
+    private async Task MarkAsRead(int notificationId)
+    {
+        await NotificationService.MarkAsReadAsync(notificationId);
+
+        // Оновлюємо статус у списку
+        var notification = Notifications.FirstOrDefault(n => n.Id == notificationId);
+        if (notification != null)
+        {
+            notification.IsRead = true;
+        }
+    }
+
+    private async Task DeleteNotification(int notificationId)
+    {
+        await NotificationService.DeleteNotificationAsync(notificationId);
+
+        // Видаляємо повідомлення зі списку
+        Notifications = Notifications.Where(n => n.Id != notificationId).ToList();
+    }
+}

@@ -1,4 +1,4 @@
- 
+
 using Elfie.Serialization;
 using EM.Plugins.EFCoreSQL;
 using EM.Plugins.EFCoreSQLServer;
@@ -10,7 +10,7 @@ using EM.WebApp.Data;
 
 using EM_UseCases.Events.interfaces;
 using EM_UseCases.PluginInterfaces;
- 
+
 using Microsoft.AspNetCore.Components.Authorization;
 using Microsoft.AspNetCore.Components.Server;
 using Microsoft.AspNetCore.Identity;
@@ -107,11 +107,12 @@ builder.Services.AddTransient<IReviewRepository, ReviewRepository>();
 
 builder.Services.AddScoped<IUserEventRepository, UserEventEFCoreRepository>();
 builder.Services.AddScoped<IGetUsersByEventIdUseCase, GetUsersByEventIdUseCase>();
-
+builder.Services.AddScoped<INotificationRepository, NotificationRepository>();
+builder.Services.AddScoped<NotificationService>();
 
 builder.Services.AddScoped<RegisterUserToEventUseCase>();
- 
 
+builder.Logging.AddConsole();
 
 var app = builder.Build();
 

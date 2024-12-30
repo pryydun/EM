@@ -1,0 +1,49 @@
+﻿@page "/create-notification/{userId}"
+@using EM.WebApp.Components.Pages.ViewModel
+@inject NotificationService NotificationService
+@inject NavigationManager NavigationManager
+
+<h3>Create Notification</h3>
+<EditForm EditContext="editContext" FormName="NotificationForm" OnValidSubmit="SendNotification">
+    <div class="mb-3">
+        <label class="form-label">Title</label>
+        <InputText class="form-control" @bind-Value="Title" />
+    </div>
+    <div class="mb-3">
+        <label class="form-label">Message</label>
+        <InputTextArea class="form-control" @bind-Value="Message" />
+    </div>
+    <button type="submit" class="btn btn-primary">Send</button>
+</EditForm>
+
+@code {
+    [Parameter]
+    public string UserId { get; set; }
+    [SupplyParameterFromForm]
+    private string Title { get; set; }
+    [SupplyParameterFromForm]
+    private string Message { get; set; }
+    private EditContext editContext;
+
+    protected override void OnInitialized()
+    {
+        // Створюємо EditContext для управління станом форми
+        editContext = new EditContext(this);
+    }
+
+    private async Task SendNotification()
+    {
+        if (string.IsNullOrWhiteSpace(Title) || string.IsNullOrWhiteSpace(Message))
+        {
+            // Валідація: перевірка, чи введені Title та Message
+            return;
+        }
+
+        // Використовуємо NotificationService для створення сповіщення
+        await NotificationService.AddNotificationAsync(UserId, Title, Message);
+
+        // Повертаємося на попередню сторінку
+        NavigationManager.NavigateTo("/users");
+    }
+}
+

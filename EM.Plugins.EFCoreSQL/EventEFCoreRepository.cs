@@ -68,7 +68,7 @@ namespace EM.Plugins.EFCoreSQLServer
                 existingEvent.StartDate = updatedEvent.StartDate;
                 existingEvent.EndDate = updatedEvent.EndDate;
                 existingEvent.Location = updatedEvent.Location;
-
+                existingEvent.ImagePath = updatedEvent.ImagePath;
                 await db.SaveChangesAsync();
             }
         }

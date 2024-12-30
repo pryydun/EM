@@ -2,43 +2,32 @@
 @inject NavigationManager NavigationManager
 @inject IAuthorizationService AuthorizationService
 @inject AuthenticationStateProvider AuthenticationStateProvider
-
 @if (this.Event is not null)
 {
-    <tr>
-        <td>@Event.Title</td>
-        <td>@Event.Description</td>
-        <td>@Event.StartDate.ToShortDateString()</td>
-        <td>@Event.EndDate.ToShortDateString()</td>
-        <td>@Event.Location</td>
-        <td>
-            @if (CanEditEvent)
+        <tr>
+            <td>@Event.Title</td>
+            <td>@Event.Description</td>
+            <td>@Event.StartDate.ToShortDateString()</td>
+            <td>@Event.EndDate.ToShortDateString()</td>
+            <td>@Event.Location</td>
+            <td class="d-flex justify-content-center align-items-center gap-2">
+                <a href="/edit-event/@Event.Id" class="btn btn-primary btn-sm">Edit</a>
+                <a href="/event-details/@Event.Id" class="btn btn-info btn-sm">Details</a>
+            @if (CanDeleteEvent)
             {
-                <a href="/edit-event/@Event.Id" class="btn btn-primary">Edit</a>
+                        <EditForm Model="Event"
+                                  FormName="@($"form-delete-event-{Event.Id}")"
+                                  OnValidSubmit="@(() => DeleteEvent(Event.Id))">
+                            <button type="submit" class="btn btn-danger btn-sm">Delete</button>
+                        </EditForm>
             }
-        </td>
-        <td>
-            <a href="/event-details/@Event.Id" class="btn btn-info">Details</a>
-        </td>
-        @if (CanDeleteEvent)
-        {
-            <td>
-                <EditForm Model="Event"
-                          FormName="@($"form-delete")"
-                          OnValidSubmit="@(() => DeleteEvent(Event.Id))">
-                    <button type="submit" class="btn btn-danger">Delete</button>
-                </EditForm>
             </td>
-        }
-    </tr>
+        </tr>
 }
 @code {
     [Parameter]
     public Event? Event { get; set; }
-
     private bool CanDeleteEvent { get; set; } = false;
-    private bool CanEditEvent { get; set; } = false;
-
     protected override async Task OnInitializedAsync()
     {
         var authState = await AuthenticationStateProvider.GetAuthenticationStateAsync();
@@ -51,13 +40,18 @@
         var organizerAuthorizationResult = await AuthorizationService.AuthorizeAsync(user, null, "OrganizerPolicy");
 
         // Користувач має доступ, якщо одна з політик дозволяє
-        CanDeleteEvent = adminAuthorizationResult.Succeeded;
-        CanEditEvent = adminAuthorizationResult.Succeeded || organizerAuthorizationResult.Succeeded;
+        CanDeleteEvent = adminAuthorizationResult.Succeeded || organizerAuthorizationResult.Succeeded;
     }
+
+
+
 
     private async Task DeleteEvent(int id)
     {
+
         await DeleteEventUseCase.ExecuteAsync(id);
+
         NavigationManager.Refresh();
+
     }
 }

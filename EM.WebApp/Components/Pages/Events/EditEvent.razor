@@ -9,41 +9,45 @@
 
 @if (eventToEdit != null)
 {
-    <EditForm Model="eventToEdit" Formname="EditEventForm" OnValidSubmit="UpdateEvent">
-        <DataAnnotationsValidator></DataAnnotationsValidator>
-        <ValidationSummary></ValidationSummary>
+    <div class="container p-5" style="max-width: 600px; margin: 0 auto; background-color: #ffffff; border-radius: 10px; box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);">
+        <h3 class="text-center mb-4" style="color: #333;">Edit Event</h3>
+        <EditForm Model="eventToEdit" Formname="EditEventForm" OnValidSubmit="UpdateEvent">
+            <DataAnnotationsValidator></DataAnnotationsValidator>
+            <ValidationSummary></ValidationSummary>
 
+            <InputNumber @bind-Value="eventToEdit.Id" hidden></InputNumber>
 
-        <InputNumber @bind-Value="eventToEdit.Id" hidden></InputNumber>
+            <div class="form-group mb-3">
+                <label for="eventTitle" style="font-weight: bold; color: #555;">Event Title</label>
+                <InputText id="eventTitle" @bind-Value="eventToEdit.Title" class="form-control" style="border: 1px solid #ddd; border-radius: 6px;" />
+            </div>
 
-        <div class="form-group">
-            <label for="eventTitle">Event Title</label>
-            <InputText id="eventTitle" @bind-Value="eventToEdit.Title" class="form-control" />
-        </div>
+            <div class="form-group mb-3">
+                <label for="eventDescription" style="font-weight: bold; color: #555;">Event Description</label>
+                <InputTextArea id="eventDescription" @bind-Value="eventToEdit.Description" class="form-control" style="border: 1px solid #ddd; border-radius: 6px;" />
+            </div>
 
-        <div class="form-group">
-            <label for="eventDescription">Event Description</label>
-            <InputTextArea id="eventDescription" @bind-Value="eventToEdit.Description" class="form-control" />
-        </div>
+            <div class="form-group mb-3">
+                <label for="eventStartDate" style="font-weight: bold; color: #555;">Start Date</label>
+                <InputDate id="eventStartDate" @bind-Value="eventToEdit.StartDate" class="form-control" style="border: 1px solid #ddd; border-radius: 6px;" TValue="DateTime" />
+            </div>
 
-        <div class="form-group">
-            <label for="eventStartDate">Start Date</label>
-            <InputDate id="eventStartDate" @bind-Value="eventToEdit.StartDate" class="form-control" TValue="DateTime" />
-        </div>
+            <div class="form-group mb-3">
+                <label for="eventEndDate" style="font-weight: bold; color: #555;">End Date</label>
+                <InputDate id="eventEndDate" @bind-Value="eventToEdit.EndDate" class="form-control" style="border: 1px solid #ddd; border-radius: 6px;" TValue="DateTime" />
+            </div>
 
-        <div class="form-group">
-            <label for="eventEndDate">End Date</label>
-            <InputDate id="eventEndDate" @bind-Value="eventToEdit.EndDate" class="form-control" TValue="DateTime" />
-        </div>
+            <div class="form-group mb-3">
+                <label for="eventLocation" style="font-weight: bold; color: #555;">Location</label>
+                <InputText id="eventLocation" @bind-Value="eventToEdit.Location" class="form-control" style="border: 1px solid #ddd; border-radius: 6px;" />
+            </div>
 
-        <div class="form-group">
-            <label for="eventLocation">Location</label>
-            <InputText id="eventLocation" @bind-Value="eventToEdit.Location" class="form-control" />
-        </div>
-        <br />
-        <button type="submit" class="btn btn-primary">Update</button>
-        <a href="/events" class="btn btn-secondary">Cancel</a>
-    </EditForm>
+            <div class="d-flex justify-content-between">
+                <button type="submit" class="btn" style="background-color: #007bff; color: white; border-radius: 6px; padding: 10px 20px;">Update</button>
+                <a href="/events" class="btn" style="background-color: #6c757d; color: white; border-radius: 6px; padding: 10px 20px;">Cancel</a>
+            </div>
+        </EditForm>
+    </div>
 }
 else
 {

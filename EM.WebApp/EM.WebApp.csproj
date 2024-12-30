@@ -7,6 +7,25 @@
   </PropertyGroup>
 
   <ItemGroup>
+    <Compile Remove="Components\Pages\NewFolder1\**" />
+    <Compile Remove="Components\Pages\NewFolder\**" />
+    <Compile Remove="wwwroot\NewFolder1\**" />
+    <Compile Remove="wwwroot\NewFolder\**" />
+    <Content Remove="Components\Pages\NewFolder1\**" />
+    <Content Remove="Components\Pages\NewFolder\**" />
+    <Content Remove="wwwroot\NewFolder1\**" />
+    <Content Remove="wwwroot\NewFolder\**" />
+    <EmbeddedResource Remove="Components\Pages\NewFolder1\**" />
+    <EmbeddedResource Remove="Components\Pages\NewFolder\**" />
+    <EmbeddedResource Remove="wwwroot\NewFolder1\**" />
+    <EmbeddedResource Remove="wwwroot\NewFolder\**" />
+    <None Remove="Components\Pages\NewFolder1\**" />
+    <None Remove="Components\Pages\NewFolder\**" />
+    <None Remove="wwwroot\NewFolder1\**" />
+    <None Remove="wwwroot\NewFolder\**" />
+  </ItemGroup>
+
+  <ItemGroup>
     <Compile Remove="Components\Controls\Event Details Card.cs" />
   </ItemGroup>
 
@@ -14,6 +33,8 @@
     <Content Remove="Components\Controls\AddReviewForm.razor" />
     <Content Remove="Components\Controls\EventDetailsCard.razor" />
     <Content Remove="Components\EventDetailsCard.razor" />
+    <Content Remove="wwwroot\images.cs" />
+    <Content Remove="wwwroot\uploads\test.txt.txt" />
   </ItemGroup>
 
   <ItemGroup>

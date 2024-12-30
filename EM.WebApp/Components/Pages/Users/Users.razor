@@ -24,12 +24,12 @@ else if (!UserList.Any())
 else
 
 {
-    <table class="table">
-        <thead>
+    <table class="table table-striped table-hover table-bordered">
+        <thead class="table-dark">
             <tr>
                 <th>Name</th>
                 <th>Email</th>
-                <th>Actions</th>
+                <th class="text-center">Actions</th>
             </tr>
         </thead>
         <tbody>
@@ -39,15 +39,23 @@ else
                 <tr>
                     <td>@user.Name</td>
                     <td>@user.Email</td>
-                    <td>
+                    <td class="text-center">
                         <div class="btn-group" role="group">
-                            <a href="/user-profile/@user.Id" class="btn btn-primary">Go to Profile</a>
+                            <a href="/create-notification/@user.Id" class="btn btn-outline-secondary btn-sm">
+                                <i class="bi bi-chat"></i> Notify
+                            </a>
+                            <a href="/user-profile/@user.Id" class="btn btn-outline-primary btn-sm">
+                                <i class="bi bi-person"></i> Profile
+                            </a>
+
                             @if (IsAdminUser)
                             {
                                 <EditForm Model="user"
-                                          FormName=""deluser"
+                                          FormName="@($"form-delete-user-{user.Id}")"
                                           OnValidSubmit="@(() => DeleteUser(user.Id))">
-                                    <button type="submit" class="btn btn-danger">Delete</button>
+                                    <button type="submit" class="btn btn-outline-danger btn-sm">
+                                        <i class="bi bi-trash"></i> Delete
+                                    </button>
                                 </EditForm>
                             }
                         </div>
@@ -57,9 +65,10 @@ else
         </tbody>
     </table>
 }
-
 @code {
     private List<UserViewModel> UserList = new();
+
+
 
 
 
@@ -67,11 +76,27 @@ else
 
 
 
+
+
+
+
+
+
+
+
+
+
+
+
+
+
     protected override async Task OnInitializedAsync()
+
+
 
     {
 
-        // Отримуємо поточний стан автентифікації
+
 
         var authState = await AuthenticationStateProvider.GetAuthenticationStateAsync();
 
@@ -85,9 +110,13 @@ else
 
 
 
-        // Отримуємо список користувачів із бази даних
+
+
+
 
         UserList = await DbContext.Users
+
+    
 
             .Select(u => new UserViewModel
                 {
@@ -96,37 +125,71 @@ else
                     Email = u.Email
                 })
 
+
+
             .ToListAsync();
+
+
 
     }
 
 
 
+
+
+
+
     private async Task DeleteUser(string userId)
 
+
+
     {
+
+
 
         await RemoveUserEventsUseCase.ExecuteAsync(userId);
 
 
 
+
+
+
+
         var user = await DbContext.Users.FirstOrDefaultAsync(u => u.Id == userId);
+
+
 
         if (user != null)
 
+
+
         {
+
+
 
             DbContext.Users.Remove(user);
 
+
+
             await DbContext.SaveChangesAsync();
+
+
 
         }
 
 
 
+
+
+
+
         // Оновлюємо список користувачів
 
+
+
         UserList = await DbContext.Users
+
+
 
             .Select(u => new UserViewModel
                 {
@@ -135,11 +198,14 @@ else
                     Email = u.Email
                 })
 
+
+
             .ToListAsync();
+
+
 
     }
 }
 
 
 
-     

@@ -12,7 +12,7 @@ namespace EM.Plugins.EFCoreSQL
         public DbSet<Event> Events { get; set; }
         public DbSet<UserEvent> UserEvents { get; set; }
         public DbSet<Review> Reviews { get; set; }
-
+        public DbSet<Notification> Notifications { get; set; }
 
         protected override void OnModelCreating(ModelBuilder modelBuilder)
         {
@@ -34,7 +34,18 @@ namespace EM.Plugins.EFCoreSQL
            .IsRequired()
            .HasDefaultValue(0);
 
-             
+
+            modelBuilder.Entity<Notification>(entity =>
+            {
+                entity.HasKey(n => n.Id);
+                entity.Property(n => n.Title).IsRequired().HasMaxLength(100);
+                entity.Property(n => n.Message).IsRequired();
+                entity.Property(n => n.RecipientId).IsRequired();
+                entity.Property(n => n.IsRead).HasDefaultValue(false);
+                entity.Property(n => n.CreatedAt).HasDefaultValueSql("GETUTCDATE()");
+            });
+
+
 
         }
     }

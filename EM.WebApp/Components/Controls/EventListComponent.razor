@@ -1,17 +1,15 @@
 ﻿@inject IViewEventsByNameUseCase ViewEventsByNameUseCase
 
-<table class="table">
-    <thead>
+<table class="table table-striped table-hover table-bordered">
+    <thead class="table-dark">
         <tr>
             <th>Назва</th>
-            <th>Description</th>
-           
+            <th>Опис</th>
             <th>Дата початку</th>
             <th>Дата завершення</th>
             <th>Локація</th>
-            <th>Дії</th>
+            <th class="text-center">Дії</th>
         </tr>
-
     </thead>
     <tbody>
         @if (Events != null && Events.Any())
@@ -24,12 +22,11 @@
         else
         {
             <tr>
-                <td colspan="5" class="text-center">Подій не знайдено</td>
+                <td colspan="6" class="text-center text-muted">Подій не знайдено</td>
             </tr>
         }
     </tbody>
 </table>
-
 @code {
     private List<Event>? Events;
 

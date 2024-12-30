@@ -11,9 +11,13 @@
             <td>@Event.EndDate.ToShortDateString()</td>
             <td>@Event.Location</td>
             <td class="d-flex justify-content-center align-items-center gap-2">
+
+            @if (CanDeleteEditEvent)
+            {
                 <a href="/edit-event/@Event.Id" class="btn btn-primary btn-sm">Edit</a>
+            }
                 <a href="/event-details/@Event.Id" class="btn btn-info btn-sm">Details</a>
-            @if (CanDeleteEvent)
+            @if (CanDeleteEditEvent)
             {
                         <EditForm Model="Event"
                                   FormName="@($"form-delete-event-{Event.Id}")"
@@ -27,7 +31,7 @@
 @code {
     [Parameter]
     public Event? Event { get; set; }
-    private bool CanDeleteEvent { get; set; } = false;
+    private bool CanDeleteEditEvent { get; set; } = false;
     protected override async Task OnInitializedAsync()
     {
         var authState = await AuthenticationStateProvider.GetAuthenticationStateAsync();
@@ -40,7 +44,7 @@
         var organizerAuthorizationResult = await AuthorizationService.AuthorizeAsync(user, null, "OrganizerPolicy");
 
         // Користувач має доступ, якщо одна з політик дозволяє
-        CanDeleteEvent = adminAuthorizationResult.Succeeded || organizerAuthorizationResult.Succeeded;
+        CanDeleteEditEvent = adminAuthorizationResult.Succeeded || organizerAuthorizationResult.Succeeded;
     }
 
 

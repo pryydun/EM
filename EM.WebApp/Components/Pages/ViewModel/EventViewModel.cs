@@ -15,16 +15,18 @@ namespace EM.WebApp.Components.Pages.ViewModel
         public string Description { get; set; } = string.Empty; // Опис події
 
         [Required(ErrorMessage = "Start Date is required.")]
-        public DateTime StartDate { get; set; } // Дата початку
+
+        public DateTime StartDate { get; set; } = DateTime.Today;
+
+
         [Required(ErrorMessage = "End Date is required.")]
-        public DateTime EndDate { get; set; } // Дата завершення
+     
+        public DateTime EndDate { get; set; } = DateTime.Today;
 
         [Required(ErrorMessage = "Location is required.")]
         public string Location { get; set; } = string.Empty; // Локація
-
-        
-       
-
     }
+
+
 }
 

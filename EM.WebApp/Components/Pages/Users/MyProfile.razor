@@ -47,7 +47,7 @@ else
                         <a href="/event-details/@eventItem.Id" class="btn btn-outline-primary btn-sm">
                             <i class="bi bi-info-circle"></i> Details
                         </a>
-                        <EditForm Model="eventItem" OnValidSubmit="() => UnjoinEvent(eventItem.Id)">
+                        <EditForm Model="eventItem" FormName = "Unjoin" OnValidSubmit="() => UnjoinEvent(eventItem.Id)">
                             <button type="submit" class="btn btn-danger btn-sm">
                                 <i class="bi bi-x-circle"></i> Unjoin
                             </button>

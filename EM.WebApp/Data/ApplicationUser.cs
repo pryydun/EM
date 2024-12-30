@@ -5,6 +5,6 @@ namespace EM.WebApp.Data
 
     public class ApplicationUser : IdentityUser
     {
-      
+       
     }
 }

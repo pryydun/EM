@@ -1,0 +1,64 @@
+﻿<h5>Reviews:</h5>
+@inject IDeleteReviewUseCase DeleteReviewUseCase
+@inject IGetReviewsByEventIdUseCase GetReviewsByEventIdUseCase
+@inject NavigationManager NavigationManager
+@if (Reviews.Any())
+{
+    <ul class="list-group">
+        @foreach (var review in Reviews)
+        {
+            <li class="list-group-item d-flex justify-content-between align-items-center">
+                <div>
+                    <strong>@review.UserName</strong>
+                    <div>
+                        @for (int i = 0; i < 5; i++)
+                        {
+                            if (i < review.Rating)
+                            {
+                                <span class="text-warning">&#9733;</span>
+                            }
+                            else
+                            {
+                                <span class="text-secondary">&#9734;</span>
+                            }
+                        }
+                    </div>
+                    <p>@review.Comment</p>
+                </div>
+                @if (CanDeleteReview)
+                {
+                    <EditForm Model="review"
+                              FormName="@($"form-delete-review-{review.Id}")"
+                              OnValidSubmit="@(() => HandleDeleteReview(review.Id))">
+                        <button type="submit" class="btn btn-danger btn-sm">Delete</button>
+                    </EditForm>
+                }
+            </li>
+        }
+    </ul>
+}
+else
+{
+    <p>No reviews available for this event.</p>
+}
+
+@code {
+    [Parameter]
+    public int Id { get; set; }
+    [Parameter]
+    public List<Review> Reviews { get; set; } = new();
+
+    [Parameter]
+    public bool CanDeleteReview { get; set; } = false;
+
+    [Parameter]
+    public EventCallback<int> OnDeleteReview { get; set; }
+
+
+    private async Task HandleDeleteReview(int reviewId)
+    {
+        await DeleteReviewUseCase.ExecuteAsync(reviewId);
+        Reviews = await GetReviewsByEventIdUseCase.ExecuteAsync(Id);
+        NavigationManager.NavigateTo(NavigationManager.Uri + "#reviewFormContainer", forceLoad: false);
+    }
+}

@@ -7,7 +7,7 @@
 @inject IUnregisterUserFromEventUseCase UnregisterUserFromEventUseCase
 @inject IGetUsersByEventIdUseCase GetUsersByEventIdUseCase
 @inject IAddReviewUseCase AddReviewUseCase
-@inject IDeleteReviewUseCase DeleteReviewUseCase
+
 @inject IGetReviewsByEventIdUseCase GetReviewsByEventIdUseCase
 @inject UserManager<ApplicationUser> UserManager
 @inject AuthenticationStateProvider AuthenticationStateProvider
@@ -22,38 +22,17 @@
 }
 else
 {
-
-    <div class="card mb-3">
-        @if (!string.IsNullOrEmpty(Event.ImagePath))
-        {
-            <img src="@Event.ImagePath" class="card-img-top" alt="@Event.Title" style="max-height: 400px; object-fit: cover;" />
-        }
-        else
-        {
-            <div class="text-center bg-light text-secondary p-5">
-                <h5>No Image Available</h5>
-            </div>
-        }
-        <div class="card-body">
-            <h4 class="card-title">@Event.Title</h4>
-            <p class="card-text"><strong>Description:</strong> @Event.Description</p>
-            <p class="card-text"><strong>Start Date:</strong> @Event.StartDate.ToString("f")</p>
-            <p class="card-text"><strong>End Date:</strong> @Event.EndDate.ToString("f")</p>
-            <p class="card-text"><strong>Location:</strong> @Event.Location</p>
-        </div>
+    <div id="joinFormContainer">
+    <EventCard Event="Event" />
     </div>
-    
-    
-    
-    
+
+
+   
     @if (JoinModel != null)
     {
         <EditForm Model="JoinModel" OnValidSubmit="HandleJoinOrUnjoin" FormName="JoinForm">
             <DataAnnotationsValidator />
             <ValidationSummary />
-
-            
-
             <h5>Registered Users:</h5>
             @if (RegisteredUsers.Any())
             {
@@ -71,55 +50,22 @@ else
             {
                 <p>No users have registered for this event yet.</p>
             }
+           
+
             @if (CanJoinEvent)
             {
                 <button class="btn btn-primary mt-3" type="submit">
                     @JoinButtonText
                 </button>
             }
-        </EditForm>
-    }
-
-    <h5>Reviews:</h5>
-    @if (Reviews.Any())
-    {
-        <ul class="list-group">
-            @foreach (var review in Reviews)
-            {
-                <li class="list-group-item d-flex justify-content-between align-items-center">
-                    <div>
-                        <strong>@review.UserName</strong>
-                        <div>
-                            @for (int i = 0; i < 5; i++)
-                            {
-                                if (i < review.Rating)
-                                {
-                                    <span class="text-warning">&#9733;</span>
-                                }
-                                else
-                                {
-                                    <span class="text-secondary">&#9734;</span>
-                                }
-                            }
-                        </div>
-                        <p>@review.Comment</p>
-                    </div>
-                    @if (CanDeleteReview)
-                    {
-                        <EditForm Model="review"
-                                  FormName="@($"form-delete-review-{review.Id}")"
-                                  OnValidSubmit="@(() => HandleDeleteReview(review.Id))">
-                            <button type="submit" class="btn btn-danger btn-sm">Delete</button>
-                        </EditForm>
-                    }
-                </li>
-            }
-        </ul>
-    }
-    else
-    {
-        <p>No reviews available for this event.</p>
-    }
+        </EditForm> 
+        }
+    
+    
+   <RewiewList 
+        Reviews="Reviews" 
+        CanDeleteReview="CanDeleteReview" Id="Id"
+        />
 
     @if (ReviewModel != null && CanAddReview)
     {
@@ -130,29 +76,29 @@ else
             <div class="card-body">
 
                 <div id="reviewFormContainer">
-                <EditForm Model="ReviewModel" OnValidSubmit="HandleAddReview" FormName="ReviewForm">
-                    <DataAnnotationsValidator />
-                    <ValidationSummary />
+                    <EditForm Model="ReviewModel" OnValidSubmit="HandleAddReview" FormName="ReviewForm">
+                        <DataAnnotationsValidator />
+                        <ValidationSummary />
 
-                    <div class="form-group mb-3">
-                        <label for="rating" class="form-label"><strong>Rating (1-5):</strong></label>
-                        <InputNumber id="rating" @bind-Value="rating" min="1" max="5" class="form-control" />
-                    </div>
+                        <div class="form-group mb-3">
+                            <label for="rating" class="form-label"><strong>Rating (1-5):</strong></label>
+                            <InputNumber id="rating" @bind-Value="rating" min="1" max="5" class="form-control" />
+                        </div>
 
-                    <div class="form-group mb-3">
-                        <label for="comment" class="form-label"><strong>Comment:</strong></label>
-                        <InputTextArea id="comment" placeholder="Type your comment here..." @bind-Value="comment" rows="4" class="form-control" />
-                    </div>
+                        <div class="form-group mb-3">
+                            <label for="comment" class="form-label"><strong>Comment:</strong></label>
+                            <InputTextArea id="comment" placeholder="Type your comment here..." @bind-Value="comment" rows="4" class="form-control" />
+                        </div>
 
-                    <div class="d-flex justify-content-between">
-                        <button type="submit" class="btn btn-success">
-                            <i class="bi bi-check-circle"></i> Submit Review
-                        </button>
-                        <a href="/events" class="btn btn-secondary">
-                            <i class="bi bi-arrow-left"></i> Cancel
-                        </a>
-                    </div>
-                </EditForm>
+                        <div class="d-flex justify-content-between">
+                            <button type="submit" class="btn btn-success">
+                                <i class="bi bi-check-circle"></i> Submit Review
+                            </button>
+                            <a href="/events" class="btn btn-secondary">
+                                <i class="bi bi-arrow-left"></i> Cancel
+                            </a>
+                        </div>
+                    </EditForm>
                 </div>
             </div>
         </div>
@@ -257,6 +203,7 @@ else
         }
 
         RegisteredUsers = await GetUsersByEventIdUseCase.ExecuteAsync(Id);
+        NavigationManager.NavigateTo(NavigationManager.Uri + "#joinFormContainer", forceLoad: false);
     }
 
     private async Task HandleAddReview()
@@ -282,12 +229,61 @@ else
         }
     }
 
-    private async Task HandleDeleteReview(int reviewId)
-    {
-        await DeleteReviewUseCase.ExecuteAsync(reviewId);
-        Reviews = await GetReviewsByEventIdUseCase.ExecuteAsync(Id);
-    }
+    
 }
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 
 
 

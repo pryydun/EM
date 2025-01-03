@@ -7,8 +7,9 @@
 @inject ApplicationDbContext DbContext
 @inject AuthenticationStateProvider AuthenticationStateProvider
 @inject IUnregisterUserFromEventUseCase UnregisterUserFromEventUseCase
-
-<h3 class="mb-4 text-center">My Profile</h3>
+@rendermode InteractiveServer
+ 
+<h3 class="mb-4 text-center" style="color: #3a236e; text-shadow: 0 2px 5px rgba(108, 71, 165, 0.7); font-weight: bold;">My Profile</h3>
 
 @if (User == null)
 {
@@ -21,52 +22,97 @@
 }
 else
 {
-    <div class="card shadow-sm mb-4">
-        <div class="card-body">
-            <h4 class="card-title">@User.Name</h4>
-            <p class="card-text"><strong>Email:</strong> @User.Email</p>
+    <div class="d-flex flex-wrap gap-4" style="background-color: #fde8f7; border-radius: 10px; padding: 20px; box-shadow: 0 4px 10px rgba(0, 0, 0, 0.3);">
+        <!-- Ліва частина: Інформація про користувача -->
+        <div style="flex: 1; color: #3a236e;">
+            <h4 class="mb-2" style="color: #6c47a5; font-size: 1.8rem; font-weight: bold;">@User.Name</h4>
+            <p style="font-size: 1.2rem;"><strong>Email:</strong> @User.Email</p>
+            <p style="font-size: 1.2rem;"><strong>Role:</strong> @UserRole</p>
+            <div class="btn-container d-flex gap-3 mt-3">
+            <a href="/Account/Manage" class="btn btn-outline-primary mt-3">
+                <i class="bi bi-gear"></i> Manage Profile
+
+            </a>
+
+                <a href="/notifications" class="btn btn-outline-success mt-3">
+                
+                <i class="bi bi-bell"></i> Notifications
+            </a>
+        </div>
+        </div>
+        <!-- Права частина: Фото користувача -->
+        <div class="text-center" style="flex-basis: 300px;">
+            <img src="@(!string.IsNullOrEmpty(User.ProfilePicture) ? User.ProfilePicture : "/uploads/deff.jpg")"
+                 alt="Profile Picture" class="rounded-circle"
+                 style="width: 200px; height: 200px; object-fit: cover; border: 5px solid #9c7fc7;">
+            <div class="mt-3">
+                @if (string.IsNullOrEmpty(User.ProfilePicture))
+                {
+                    <div>
+                        <InputFile OnChange="HandleFileSelected" />
+                        <button class="btn btn-primary btn-sm mt-2" @onclick="UploadProfilePicture">Upload Picture</button>
+                    </div>
+                }
+                else
+                {
+                    <button class="btn btn-danger btn-sm mt-2" @onclick="RemoveProfilePicture">Remove Picture</button>
+                }
+            </div>
         </div>
     </div>
 
-    <h5 class="mb-3">Registered Events</h5>
+    <div style="background-color: #2b1b4e; padding: 1rem; border-radius: 10px; margin-top: 20px; text-align: center; box-shadow: 0 4px 8px rgba(0, 0, 0, 0.3);">
+        <h5 style="color: #e6dbff; font-weight: bold; text-shadow: 0 2px 5px rgba(108, 71, 165, 0.7);">Registered Events</h5>
+    </div>
+
     @if (RegisteredEvents == null || !RegisteredEvents.Any())
     {
-        <p class="text-muted">No registered events found for this user.</p>
+        <p class="text-muted text-center" style="font-size: 1.2rem;">No registered events found for this user.</p>
     }
     else
     {
-        <ul class="list-group shadow-sm">
+        <div class="d-flex flex-wrap gap-4 mt-3 justify-content-center">
             @foreach (var eventItem in RegisteredEvents)
             {
-                <li class="list-group-item d-flex justify-content-between align-items-center">
-                    <div>
-                        <strong>@eventItem.Title</strong><br />
-                        <small class="text-muted">@eventItem.StartDate.ToString("f") to @eventItem.EndDate.ToString("f")</small>
+                <div class="card shadow-lg" style="background-color: #2b1b4e; color: #e6dbff; width: 100%; max-width: 400px; border-radius: 10px; border: 1px solid #6c47a5;">
+                    <div class="card-body">
+                        <h5 class="card-title" style="color: #9c7fc7; font-weight: bold; text-shadow: 0 2px 5px rgba(156, 127, 199, 0.7);">
+                            @eventItem.Title
+                        </h5>
+                        <p class="card-text">
+                            <strong>Date:</strong> @eventItem.StartDate.ToString("f") - @eventItem.EndDate.ToString("f")
+                        </p>
+                        <p class="card-text">
+                            <strong>Location:</strong> @eventItem.Location
+                        </p>
+                        <div class="d-flex justify-content-between">
+                            <a href="/event-details/@eventItem.Id" class="btn btn-outline-primary btn-sm">
+                                <i class="bi bi-info-circle"></i> Details
+                            </a>
+                            <EditForm Model="eventItem" FormName="Unjoin" OnValidSubmit="() => UnjoinEvent(eventItem.Id)">
+                                <button type="submit" class="btn btn-danger btn-sm">
+                                    <i class="bi bi-x-circle"></i> Unjoin
+                                </button>
+                            </EditForm>
+                        </div>
                     </div>
-                    <div class="d-flex gap-2">
-                        <a href="/event-details/@eventItem.Id" class="btn btn-outline-primary btn-sm">
-                            <i class="bi bi-info-circle"></i> Details
-                        </a>
-                        <EditForm Model="eventItem" FormName = "Unjoin" OnValidSubmit="() => UnjoinEvent(eventItem.Id)">
-                            <button type="submit" class="btn btn-danger btn-sm">
-                                <i class="bi bi-x-circle"></i> Unjoin
-                            </button>
-                        </EditForm>
-                    </div>
-                </li>
+                </div>
             }
-        </ul>
+        </div>
     }
 
-    <a href="/events" class="btn btn-primary mt-4">
-        <i class="bi bi-arrow-left"></i> Back to Events
-    </a>
+    <div class="text-center mt-4">
+        <a href="/events" class="btn btn-primary" style="background-color: #6c47a5; border-color: #3a236e; color: white;">
+            <i class="bi bi-arrow-left"></i> Back to Events
+        </a>
+    </div>
 }
 
 @code {
     private UserViewModel? User;
     private List<EventViewModel> RegisteredEvents = new();
-
+    private IBrowserFile? selectedFile;
+    private string UserRole = string.Empty;
     protected override async Task OnInitializedAsync()
     {
         // Get the currently authenticated user
@@ -83,10 +129,16 @@ else
                 .Select(u => new UserViewModel
                     {
                         Id = u.Id,
-                        Name = u.UserName,
-                        Email = u.Email
+                        Name = u.Name,
+                        Email = u.Email,
+                        ProfilePicture = u.ProfilePicture
                     })
                 .FirstOrDefaultAsync();
+            UserRole = await DbContext.UserClaims
+                            .Where(c => c.UserId == userId && c.ClaimType == "role")
+                            .Select(c => c.ClaimValue)
+                            .FirstOrDefaultAsync() ?? "Unknown";
+
 
             // Get events for the authenticated user
             var events = await UserEventRepository.GetEventsByUserIdAsync(userId);
@@ -104,6 +156,44 @@ else
         else
         {
             User = null;
+        }
+    }
+
+    private async Task HandleFileSelected(InputFileChangeEventArgs e)
+    {
+        selectedFile = e.File;
+    }
+
+    private async Task UploadProfilePicture()
+    {
+        if (selectedFile != null)
+        {
+            var filePath = Path.Combine("wwwroot/uploads", $"{Guid.NewGuid()}_{selectedFile.Name}");
+            await using var stream = selectedFile.OpenReadStream();
+            await using var fileStream = new FileStream(filePath, FileMode.Create);
+            await stream.CopyToAsync(fileStream);
+
+            // Save the profile picture path to the database
+            var user = await DbContext.Users.FirstOrDefaultAsync(u => u.Id == User.Id);
+            if (user != null)
+            {
+                user.ProfilePicture = $"/uploads/{Path.GetFileName(filePath)}";
+                await DbContext.SaveChangesAsync();
+
+                User.ProfilePicture = user.ProfilePicture;
+            }
+        }
+    }
+
+    private async Task RemoveProfilePicture()
+    {
+        var user = await DbContext.Users.FirstOrDefaultAsync(u => u.Id == User.Id);
+        if (user != null)
+        {
+            user.ProfilePicture = null;
+            await DbContext.SaveChangesAsync();
+
+            User.ProfilePicture = null;
         }
     }
 
@@ -129,3 +219,4 @@ else
         }
     }
 }
+

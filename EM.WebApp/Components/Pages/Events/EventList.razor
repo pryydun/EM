@@ -1,7 +1,7 @@
 ﻿@page "/events"
 @inject IViewEventsByNameUseCase ViewEventsByNameUseCase
 @inject AuthenticationStateProvider AuthenticationStateProvider
-
+     
 <h3>EventList</h3>
 
 <SearchComponent OnSearch="HandleSearch"></SearchComponent>
@@ -12,9 +12,16 @@
 
 @if (CanAddEvent)
 {
-    <div class="d-flex justify-content-start mb-3">
-        <a href="/add-event" class="btn btn-success btn-lg">Add Event</a>
+    <div>
+        <a href="/add-event" class="btn btn-primary btn-lg d-flex align-items-center" style="background-color: #9c7fc7; border-color: #6c47a5; box-shadow: 0 6px 15px rgba(156, 127, 199, 0.9), 0 0 15px rgba(211, 188, 232, 0.8) inset; transition: background-color 0.3s, box-shadow 0.3s;">
+            <span class="me-2" style="font-weight: bold; font-size: 1.2em;"></span>
+            <span class="me-2">+</span>
+            Add Event
+        </a>
     </div>
+       <br />
+       
+   
 }
 
 @code {

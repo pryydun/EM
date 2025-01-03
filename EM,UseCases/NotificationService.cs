@@ -17,7 +17,7 @@ namespace EM_UseCases
             _notificationRepository = notificationRepository;
         }
 
-        public async Task AddNotificationAsync(string recipientId, string title, string message)
+        public async Task AddNotificationAsync(string recipientId, string title, string message, string sender)
         {
             var notification = new Notification
             {
@@ -25,7 +25,8 @@ namespace EM_UseCases
                 Title = title,
                 Message = message,
                 IsRead = false,
-                CreatedAt = DateTime.UtcNow
+                CreatedAt = DateTime.UtcNow,
+                Sender = sender
             };
 
             await _notificationRepository.AddAsync(notification);

@@ -6,7 +6,7 @@
 @inject NavigationManager NavigationManager
 @inject IRemoveUserEventsUseCase RemoveUserEventsUseCase
 @inject AuthenticationStateProvider AuthenticationStateProvider
-
+@rendermode InteractiveServer
 <h3>All Users</h3>
 
 @if (UserList == null)
@@ -24,6 +24,21 @@ else if (!UserList.Any())
 else
 
 {
+    <EditForm Model="searchFilter" FormName="Search" OnValidSubmit="Search">
+        <div class="input-group mb-3">
+            <InputText class="form-control"
+                       placeholder="Search by name or email..."
+                       @bind-Value="searchFilter"
+                       @oninput="Search"
+                       style="border-right: none; border-radius: 8px 0 0 8px;">
+            </InputText>
+            <button type="submit" class="btn input-group-text"
+                    style="background-color: #28a745; color: white; border: none; border-radius: 0 8px 8px 0;">
+                <i class="bi bi-search"></i>
+            </button>
+        </div>
+    </EditForm>
+
     <table class="table table-striped table-hover table-bordered">
         <thead class="table-dark">
             <tr>
@@ -33,19 +48,17 @@ else
             </tr>
         </thead>
         <tbody>
-            @foreach (var user in UserList)
+            @foreach (var user in FilteredUserList)
 
             {
                 <tr>
                     <td>@user.Name</td>
                     <td>@user.Email</td>
                     <td class="text-center">
-                        <div class="btn-group" role="group">
-                            
+                        <div class="btn-group gap-3" role="group">
                             <a href="/user-profile/@user.Id" class="btn btn-outline-primary btn-sm">
                                 <i class="bi bi-person"></i> Profile
                             </a>
-
                             @if (IsAdminUser)
                             {
                                 <a href="/create-notification/@user.Id" class="btn btn-outline-secondary btn-sm">
@@ -66,38 +79,21 @@ else
         </tbody>
     </table>
 }
+
 @code {
     private List<UserViewModel> UserList = new();
 
+    private List<UserViewModel> FilteredUserList = new();
 
-
-
+    private string searchFilter = string.Empty;
 
     private bool IsAdminUser;
 
 
 
-
-
-
-
-
-
-
-
-
-
-
-
-
-
     protected override async Task OnInitializedAsync()
 
-
-
     {
-
-
 
         var authState = await AuthenticationStateProvider.GetAuthenticationStateAsync();
 
@@ -105,54 +101,55 @@ else
 
 
 
-        // Перевіряємо, чи користувач має роль адміністратора
-
         IsAdminUser = user.HasClaim(c => c.Type == "role" && c.Value == "Admin");
-
-
-
-
 
 
 
         UserList = await DbContext.Users
 
-    
-
             .Select(u => new UserViewModel
+
                 {
+
                     Id = u.Id,
-                    Name = u.UserName,
+
+                    Name = u.Name,
+
                     Email = u.Email
+
                 })
-
-
 
             .ToListAsync();
 
 
 
+        FilteredUserList = UserList;
+
     }
 
 
 
+    private void Search()
 
+    {
+
+        FilteredUserList = UserList.Where(user =>
+
+            user.Name.Contains(searchFilter, StringComparison.OrdinalIgnoreCase) ||
+
+            user.Email.Contains(searchFilter, StringComparison.OrdinalIgnoreCase))
+
+            .ToList();
+
+    }
 
 
 
     private async Task DeleteUser(string userId)
 
-
-
     {
 
-
-
         await RemoveUserEventsUseCase.ExecuteAsync(userId);
-
-
-
-
 
 
 
@@ -162,51 +159,35 @@ else
 
         if (user != null)
 
-
-
         {
-
-
 
             DbContext.Users.Remove(user);
 
-
-
             await DbContext.SaveChangesAsync();
-
-
 
         }
 
 
 
-
-
-
-
-        // Оновлюємо список користувачів
-
-
-
         UserList = await DbContext.Users
 
-
-
             .Select(u => new UserViewModel
+
                 {
+
                     Id = u.Id,
+
                     Name = u.UserName,
+
                     Email = u.Email
+
                 })
-
-
 
             .ToListAsync();
 
 
 
+        FilteredUserList = UserList;
+
     }
 }
-
-
-

@@ -2,7 +2,9 @@
 @using EM.WebApp.Components.Pages.ViewModel
 @inject NotificationService NotificationService
 @inject NavigationManager NavigationManager
+@inject AuthenticationStateProvider AuthenticationStateProvider
 
+@attribute [Authorize(Policy = "OrganizerOrAdminPolicy")]
 <h3>Create Notification</h3>
 <EditForm EditContext="editContext" FormName="NotificationForm" OnValidSubmit="SendNotification">
     <div class="mb-3">
@@ -24,10 +26,14 @@
     [SupplyParameterFromForm]
     private string Message { get; set; }
     private EditContext editContext;
-
-    protected override void OnInitialized()
+    private string Sender { get; set; }
+    
+    protected override async Task OnInitializedAsync()
     {
-        // Створюємо EditContext для управління станом форми
+        var authState = await AuthenticationStateProvider.GetAuthenticationStateAsync();
+        var user = authState.User;
+        Sender = user.Identity?.Name ?? "Unknown";
+
         editContext = new EditContext(this);
     }
 
@@ -35,12 +41,12 @@
     {
         if (string.IsNullOrWhiteSpace(Title) || string.IsNullOrWhiteSpace(Message))
         {
-            // Валідація: перевірка, чи введені Title та Message
+             
             return;
         }
 
         // Використовуємо NotificationService для створення сповіщення
-        await NotificationService.AddNotificationAsync(UserId, Title, Message);
+        await NotificationService.AddNotificationAsync(UserId, Title, Message, Sender);
 
         // Повертаємося на попередню сторінку
         NavigationManager.NavigateTo("/users");

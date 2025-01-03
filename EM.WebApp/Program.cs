@@ -19,22 +19,18 @@ using Microsoft.Extensions.DependencyInjection;
 using EM.UseCases;
 using EM_UseCases;
 
-
-
-
 var builder = WebApplication.CreateBuilder(args);
 
 // Add services to the container.
 
 builder.Services.AddDbContextFactory<EMContext>(options =>
     options.UseSqlServer(builder.Configuration.GetConnectionString("EventManagement")));
-
-
+ 
 
 builder.Services.AddRazorComponents();
-
-
-builder.Services.AddHttpContextAccessor();
+builder.Services.AddRazorPages();
+builder.Services.AddRazorComponents()
+    .AddInteractiveServerComponents();
 builder.Services.AddCascadingAuthenticationState();
 builder.Services.AddScoped<IdentityUserAccessor>();
 builder.Services.AddScoped<IdentityRedirectManager>();
@@ -46,7 +42,7 @@ builder.Services.AddAuthorization(options =>
     options.AddPolicy("OrganizerPolicy", policy => policy.RequireClaim("role", "Organizer"));
     options.AddPolicy("AdminPolicy", policy => policy.RequireClaim("role", "Admin"));
     options.AddPolicy("OrganizerOrAdminPolicy", policy => policy.RequireClaim("role", "Organizer", "Admin"));
- 
+
 });
 builder.Services.AddAuthentication(options =>
 {
@@ -66,30 +62,12 @@ builder.Services.AddIdentityCore<ApplicationUser>(options => options.SignIn.Requ
     .AddDefaultTokenProviders();
 
 builder.Services.AddSingleton<IEmailSender<ApplicationUser>, IdentityNoOpEmailSender>();
-builder.Services.AddRazorComponents()
-    .AddInteractiveServerComponents();
-
-
-
-
-
-
-
-
-
-
-
 
 // Реєструємо репозиторії для SQL Server
 builder.Services.AddTransient<IEventRepository, EventEFCoreRepository>();
 
-
-
-
-
-
 builder.Services.AddRazorComponents();
- 
+
 builder.Services.AddTransient<IViewEventsByNameUseCase, ViewEventsByNameUseCase>();
 builder.Services.AddTransient<IEditEventUseCase, EditEventUseCase>();
 builder.Services.AddTransient<IAddEventsUseCase, AddEventsUseCase>();
@@ -98,18 +76,18 @@ builder.Services.AddTransient<IDeleteEventUseCase, DeleteEventUseCase>();
 builder.Services.AddScoped<IReviewRepository, ReviewRepository>();
 builder.Services.AddTransient<IRemoveUserEventsUseCase, RemoveUserEventsUseCase>();
 builder.Services.AddTransient<IAddReviewUseCase, AddReviewUseCase>();
-builder.Services.AddTransient<IGetReviewsByEventIdUseCase, GetReviewsByEventIdUseCase>(); 
+builder.Services.AddTransient<IGetReviewsByEventIdUseCase, GetReviewsByEventIdUseCase>();
 builder.Services.AddScoped<RegisterUserToEventUseCase>();
 builder.Services.AddScoped<GetUsersByEventIdUseCase>();
 builder.Services.AddTransient<IUnregisterUserFromEventUseCase, UnregisterUserFromEventUseCase>();
 builder.Services.AddTransient<IDeleteReviewUseCase, DeleteReviewUseCase>();
 builder.Services.AddTransient<IReviewRepository, ReviewRepository>();
-
+builder.Services.AddScoped<UserService>();
 builder.Services.AddScoped<IUserEventRepository, UserEventEFCoreRepository>();
 builder.Services.AddScoped<IGetUsersByEventIdUseCase, GetUsersByEventIdUseCase>();
 builder.Services.AddScoped<INotificationRepository, NotificationRepository>();
 builder.Services.AddScoped<NotificationService>();
-
+builder.Services.AddTransient<IGetUpcomingEventsUseCase, GetUpcomingEventsUseCase>();
 builder.Services.AddScoped<RegisterUserToEventUseCase>();
 
 builder.Logging.AddConsole();
@@ -128,16 +106,17 @@ else
     app.UseHsts();
 }
 
-
-app.MapRazorComponents<App>()
-    .AddInteractiveServerRenderMode();
-
 app.UseHttpsRedirection();
 
 app.UseStaticFiles();
 app.UseAntiforgery();
 
-app.MapRazorComponents<App>();
+app.MapRazorComponents<App>()
+    .AddInteractiveServerRenderMode();
+
+// Add additional endpoints required by the Identity /Account Razor components.
 app.MapAdditionalIdentityEndpoints();
 
 app.Run();
+
+

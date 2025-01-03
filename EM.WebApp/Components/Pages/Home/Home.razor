@@ -1,0 +1,156 @@
+﻿@page "/"
+@rendermode InteractiveServer
+@using EM_UseCases.PluginInterfaces
+@inject IEventRepository EventRepository
+@inject NavigationManager NavigationManager
+
+<div class="home-container">
+    <h1 class="home-title">Welcome to the Event Management</h1>
+
+    <div class="events-gallery">
+        @if (Events == null)
+        {
+            <p>Loading events...</p>
+        }
+        else if (!Events.Any())
+        {
+            <p>No events available.</p>
+        }
+        else
+        {
+            @foreach (var eventItem in Events.Take(3))
+            {
+                <div class="event-card" @onclick="() => NavigateToEventDetails(eventItem.Id)">
+                    <img src="@eventItem.ImagePath" alt="@eventItem.Title" class="event-image" />
+                    <div class="event-details">
+                        <h3>@eventItem.Title</h3>
+                        <p>@eventItem.StartDate.ToString("MMMM dd, yyyy")</p>
+                    </div>
+                </div>
+            }
+        }
+    </div>
+
+    <div class="view-more-container">
+        <a href="/events" class="view-more-link">View More</a>
+    </div>
+</div>
+
+<style>
+    .home-container {
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        padding: 20px;
+        background-color: #f8f8f8;
+    }
+
+    .home-title {
+        font-size: 2.5rem;
+        color: #333;
+        margin-bottom: 30px;
+        text-align: center;
+        font-family: 'Arial', sans-serif;
+    }
+
+    .view-more-link {
+        text-decoration: none;
+        color: #6c47a5; /* Фіолетовий колір для тексту */
+        font-size: 1.25rem;
+        font-weight: bold;
+        padding: 10px 20px;
+        background-color: #f3e9fa; /* Легкий фіолетовий фон */
+        border-radius: 30px; /* Круглі кути */
+        border: 2px solid #6c47a5; /* Фіолетова рамка */
+        transition: all 0.3s ease; /* Плавний перехід для всіх властивостей */
+        display: inline-block; /* Зберігає посилання у вигляді кнопки */
+        text-align: center;
+    }
+
+        .view-more-link:hover {
+            background-color: #6c47a5; /* Темний фіолетовий фон при наведенні */
+            color: #fff; /* Білий колір тексту при наведенні */
+            border-color: #4b3473; /* Темніша фіолетова рамка при наведенні */
+            transform: scale(1.05); /* Легке збільшення розміру */
+        }
+
+        .view-more-link:focus {
+            outline: none; /* Прибираємо обводку при фокусі */
+            box-shadow: 0 0 10px rgba(108, 71, 165, 0.5); /* Тінь для виділення посилання */
+        }
+    .events-gallery {
+        display: grid;
+        grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
+        gap: 20px;
+        width: 100%;
+        max-width: 1200px;
+        margin: 0 auto;
+    }
+
+    .event-card {
+        background-color: #fff;
+        border-radius: 10px;
+        box-shadow: 0 4px 10px rgba(0, 0, 0, 0.1);
+        overflow: hidden;
+        cursor: pointer;
+        transition: transform 0.3s ease, box-shadow 0.3s ease;
+    }
+
+        .event-card:hover {
+            transform: translateY(-10px);
+            box-shadow: 0 6px 20px rgba(0, 0, 0, 0.2);
+        }
+
+    .event-image {
+        width: 100%;
+        height: 200px;
+        object-fit: cover;
+    }
+
+    .event-details {
+        padding: 15px;
+        text-align: center;
+    }
+
+        .event-details h3 {
+            font-size: 1.25rem;
+            color: #333;
+            margin: 0;
+        }
+
+        .event-details p {
+            margin-top: 5px;
+            color: #777;
+        }
+
+    .view-more-container {
+        margin-top: 30px;
+    }
+
+    .view-more-link {
+        text-decoration: none;
+        color: #007bff;
+        font-size: 1.25rem;
+        font-weight: bold;
+    }
+
+        .view-more-link:hover {
+            text-decoration: underline;
+        }
+</style>
+
+@code {
+    private IEnumerable<Event>? Events;
+
+    protected override async Task OnInitializedAsync()
+    {
+        Events = await EventRepository.GetAllEventsAsync();
+        // Фільтруємо найближчі події за датою (сортуємо за датою)
+        Events = Events.OrderBy(e => e.StartDate);
+    }
+
+    private void NavigateToEventDetails(int eventId)
+    {
+        NavigationManager.NavigateTo($"/event-details/{eventId}");
+    }
+}

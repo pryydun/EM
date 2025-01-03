@@ -1,22 +1,26 @@
-﻿<div class="card mb-3">
+﻿<div class="card mb-3 d-flex flex-row align-items-start" style="background-color: #f9f9f9; box-shadow: 0 4px 10px rgba(0, 0, 0, 0.1); border-radius: 10px;">
     @if (!string.IsNullOrEmpty(Event.ImagePath))
     {
-        <img src="@Event.ImagePath" class="card-img-top" alt="@Event.Title" style="max-height: 400px; object-fit: cover;" />
+        <img src="@Event.ImagePath" alt="@Event.Title" class="rounded" style="width: 40%; max-height: 300px; object-fit: cover; margin: 10px;" />
     }
     else
     {
-        <div class="text-center bg-light text-secondary p-5">
+             
+        <div class="text-center bg-light text-secondary d-flex justify-content-center align-items-center rounded" style="width: 40%; height: 300px; margin: 10px;">
             <h5>No Image Available</h5>
         </div>
     }
-    <div class="card-body">
-        <h4 class="card-title">@Event.Title</h4>
+    <div class="card-body" style="flex: 1; margin-left: 10px;">
+        <h4 class="card-title" style="font-size: 2rem; color: #3a236e; text-shadow: 0 2px 5px rgba(58, 35, 110, 0.5); font-weight: bold; text-align: center;">
+            @Event.Title
+        </h4>
         <p class="card-text"><strong>Description:</strong> @Event.Description</p>
         <p class="card-text"><strong>Start Date:</strong> @Event.StartDate.ToString("f")</p>
         <p class="card-text"><strong>End Date:</strong> @Event.EndDate.ToString("f")</p>
         <p class="card-text"><strong>Location:</strong> @Event.Location</p>
     </div>
 </div>
+
 
 @code {
     [Parameter]

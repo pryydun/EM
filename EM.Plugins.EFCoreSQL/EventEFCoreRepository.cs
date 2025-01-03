@@ -40,8 +40,12 @@ namespace EM.Plugins.EFCoreSQLServer
         public async Task<IEnumerable<Event>> GetAllEventsAsync()
         {
             using var db = _contextFactory.CreateDbContext();
-            return await db.Events.ToListAsync() ?? Enumerable.Empty<Event>();
+            return await db.Events
+                           .OrderByDescending(e => e.StartDate) // Сортування за зростанням дати початку
+                           .ToListAsync()
+                           ?? Enumerable.Empty<Event>();
         }
+
 
         public async Task<Event> GetEventByIdAsync(int eventId)
         {
@@ -72,5 +76,12 @@ namespace EM.Plugins.EFCoreSQLServer
                 await db.SaveChangesAsync();
             }
         }
+        public async Task<IEnumerable<Event>> GetAllAsync()
+        {
+            using var db = _contextFactory.CreateDbContext();
+            return await db.Events.ToListAsync();
+        }
+
+
     }
 }

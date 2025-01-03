@@ -6,13 +6,13 @@
 @inject IEditEventUseCase EditEventUseCase
 @inject IViewEventByIdUseCase ViewEventByIdUseCase
 @inject NavigationManager NavigationManager
-@attribute [Authorize(Policy = "OrganizerOrAdminPolicy")]
+@inject IWebHostEnvironment WebHostEnvironment
+@rendermode InteractiveServer
 <h3>Edit Event</h3>
 
 @if (eventToEdit != null)
 {
     <div class="container p-5" style="max-width: 600px; margin: 0 auto; background-color: #ffffff; border-radius: 10px; box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);">
-        <h3 class="text-center mb-4" style="color: #333;">Edit Event</h3>
         <EditForm Model="eventToEdit" Formname="EditEventForm" OnValidSubmit="UpdateEvent">
             <DataAnnotationsValidator></DataAnnotationsValidator>
             <ValidationSummary></ValidationSummary>
@@ -44,6 +44,18 @@
                 <InputText id="eventLocation" @bind-Value="eventToEdit.Location" class="form-control" style="border: 1px solid #ddd; border-radius: 6px;" />
             </div>
 
+            <div class="form-group mb-3">
+                <label for="eventPhoto" style="font-weight: bold; color: #555;">Event Photo</label>
+                <InputFile id="eventPhoto" OnChange="HandleImageChange" class="form-control" style="border: 1px solid #ddd; border-radius: 6px;" />
+            </div>
+
+            @if (!string.IsNullOrEmpty(eventToEdit.ImagePath))
+            {
+                <div class="mb-3">
+                    <img src="@eventToEdit.ImagePath" alt="Event Photo" style="max-width: 100%; height: auto; border-radius: 6px;" />
+                </div>
+            }
+
             <div class="d-flex justify-content-between">
                 <button type="submit" class="btn" style="background-color: #007bff; color: white; border-radius: 6px; padding: 10px 20px;">Update</button>
                 <a href="/events" class="btn" style="background-color: #6c757d; color: white; border-radius: 6px; padding: 10px 20px;">Cancel</a>
@@ -59,28 +71,42 @@ else
 @code {
     [Parameter]
     public int Id { get; set; }
-    [SupplyParameterFromForm]
+
     private EventViewModel? eventToEdit { get; set; }
+    private IBrowserFile? selectedImage;
 
     protected override async Task OnParametersSetAsync()
     {
         if (eventToEdit == null)
         {
-            // Завантажуємо подію
             var ev = await ViewEventByIdUseCase.ExecuteAsync(Id);
 
-             
-                // Ініціалізуємо ViewModel
-                eventToEdit = new EventViewModel
-                    {
-                        Id = ev.Id,
-                        Title = ev.Title,
-                        Description = ev.Description,
-                        StartDate = ev.StartDate,
-                        EndDate = ev.EndDate,
-                        Location = ev.Location
-                    };
-             
+            eventToEdit = new EventViewModel
+                {
+                    Id = ev.Id,
+                    Title = ev.Title,
+                    Description = ev.Description,
+                    StartDate = ev.StartDate,
+                    EndDate = ev.EndDate,
+                    Location = ev.Location,
+
+                    ImagePath = ev.ImagePath
+                };
+        }
+    }
+
+    private async Task HandleImageChange(InputFileChangeEventArgs e)
+    {
+        selectedImage = e.File;
+
+        if (selectedImage != null)
+        {
+            var filePath = Path.Combine(WebHostEnvironment.WebRootPath, "uploads", selectedImage.Name);
+            await using var stream = selectedImage.OpenReadStream();
+            await using var fileStream = new FileStream(filePath, FileMode.Create);
+            await stream.CopyToAsync(fileStream);
+
+            eventToEdit.ImagePath = $"/uploads/{selectedImage.Name}";
         }
     }
 
@@ -88,19 +114,18 @@ else
     {
         if (eventToEdit != null)
         {
-            var evv = new Event
+            var ev = new Event
                 {
                     Id = eventToEdit.Id,
                     Title = eventToEdit.Title,
                     Description = eventToEdit.Description,
                     StartDate = eventToEdit.StartDate,
                     EndDate = eventToEdit.EndDate,
-                    Location = eventToEdit.Location
-
-
+                    Location = eventToEdit.Location,
+                    ImagePath = eventToEdit.ImagePath
                 };
-            await EditEventUseCase.ExecuteAsync(evv);
-             
+            await EditEventUseCase.ExecuteAsync(ev);
+
             NavigationManager.NavigateTo("/events");
         }
     }

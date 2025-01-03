@@ -25,6 +25,8 @@ namespace EM.WebApp.Components.Pages.ViewModel
 
         [Required(ErrorMessage = "Location is required.")]
         public string Location { get; set; } = string.Empty; // Локація
+
+        public string? ImagePath { get; set; } = string.Empty;
     }
 
 

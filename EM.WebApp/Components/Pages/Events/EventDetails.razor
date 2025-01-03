@@ -13,7 +13,7 @@
 @inject AuthenticationStateProvider AuthenticationStateProvider
 @inject NavigationManager NavigationManager
 @inject IViewEventByIdUseCase ViewEventByIdUseCase
-
+@rendermode InteractiveServer
 <h3>Event Details</h3>
 
 @if (Event == null)
@@ -33,80 +33,138 @@ else
         <EditForm Model="JoinModel" OnValidSubmit="HandleJoinOrUnjoin" FormName="JoinForm">
             <DataAnnotationsValidator />
             <ValidationSummary />
-            <h5>Registered Users:</h5>
-            @if (RegisteredUsers.Any())
-            {
-                <ul class="list-group">
-                    @foreach (var us in RegisteredUsers)
-                    {
-                        <li class="list-group-item">
-                            <strong>@us.Name</strong> (@us.Email)
-                            <a href="/user-profile/@us.Id" class="btn btn-link">View Profile</a>
-                        </li>
-                    }
-                </ul>
-            }
-            else
-            {
-                <p>No users have registered for this event yet.</p>
-            }
-           
 
             @if (CanJoinEvent)
             {
-                <button class="btn btn-primary mt-3" type="submit">
+                <button class="btn btn-success mt-3" type="submit"
+                        style="background-color: #28a745;
+                   border-color: #1e7e34;
+                   font-size: 1rem;
+                   font-weight: bold;
+                    
+                   border-radius: 8px;
+                   text-transform: uppercase;
+                   color: white;">
                     @JoinButtonText
                 </button>
-            }
-        </EditForm> 
-        }
-    
-    
-   <RewiewList 
-        Reviews="Reviews" 
-        CanDeleteReview="CanDeleteReview" Id="Id"
-        />
 
+            }
+        </EditForm>
+
+        <br />
+
+        @if (JoinModel != null)
+        {
+            <details style="background-color: #f9f6fc; border-radius: 10px; box-shadow: 0 6px 12px rgba(0, 0, 0, 0.15); margin-bottom: 1rem; padding: 10px;">
+                <summary style="background-color: #6c47a5; color: white; font-weight: bold; font-size: 1.2rem; text-shadow: 0 2px 5px rgba(58, 35, 110, 0.5); padding: 10px; border-radius: 8px; cursor: pointer;">
+                    Registered Users
+                </summary>
+                <div style="padding: 10px;">
+                    @if (RegisteredUsers.Any())
+                    {
+                        <ul class="list-group" style="background-color: #f2edf7; border-radius: 8px; box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);">
+                            @foreach (var us in RegisteredUsers)
+                            {
+                                <li class="list-group-item d-flex justify-content-between align-items-center"
+                                    style="border-bottom: 1px solid #d3bce8; padding: 10px; background-color: #fff; border-radius: 8px;">
+                                    <strong style="color: #6c47a5; font-size: 1rem;">@us.Name</strong>
+                                    <div class="d-flex gap-2 align-items-center">
+                                        <a href="/user-profile/@us.Id" class="btn btn-link"
+                                           style="color: #007bff; text-decoration: none;">
+                                            View Profile
+                                        </a>
+                                        @if (CanDelUser)
+                                        {
+                                            <EditForm Model="us" FormName="DelFromEv" OnValidSubmit="() => RemoveUserFromEvent(us.Id)">
+                                                <button type="submit" class="btn btn-outline-danger btn-sm"
+                                                        style="transition: background-color 0.3s, color 0.3s;">
+                                                    Remove
+                                                </button>
+                                            </EditForm>
+                                        }
+                                    </div>
+                                </li>
+                            }
+                        </ul>
+                    }
+                    else
+                    {
+                        <p style="color: #6c47a5; font-size: 1rem;">No users have registered for this event yet.</p>
+                    }
+                </div>
+            </details>
+        }
+
+
+          
+        
+        }
+
+
+
+    <RewiewList Reviews="Reviews"
+                CanDeleteReview="CanDeleteReview" Id="Id" />
     @if (ReviewModel != null && CanAddReview)
     {
         <div class="card mt-4 shadow-sm">
-            <div class="card-header bg-primary text-white">
-                <h5>Add Your Review</h5>
+            <div class="card-header"
+                 style="background-color: #28a745; color: white; font-weight: bold; font-size: 1.2rem; text-align: center;">
+                Add Your Review
             </div>
-            <div class="card-body">
+            <div class="card-body"
+                 style="background-color: #f9f6fc; border-radius: 10px; padding: 20px; box-shadow: 0 6px 12px rgba(0, 0, 0, 0.15);">
 
-                <div id="reviewFormContainer">
-                    <EditForm Model="ReviewModel" OnValidSubmit="HandleAddReview" FormName="ReviewForm">
-                        <DataAnnotationsValidator />
-                        <ValidationSummary />
+                <EditForm Model="ReviewModel" OnValidSubmit="HandleAddReview" FormName="ReviewForm">
+                    <DataAnnotationsValidator />
+                    <ValidationSummary style="color: #dc3545;" />
 
-                        <div class="form-group mb-3">
-                            <label for="rating" class="form-label"><strong>Rating (1-5):</strong></label>
-                            <InputNumber id="rating" @bind-Value="rating" min="1" max="5" class="form-control" />
+                    <div class="form-group mb-3">
+                        <label for="rating" class="form-label" style="color: #3a236e; font-weight: bold; font-size: 1.1rem;">
+                            Rating:
+                        </label>
+                        <div id="rating" style="display: flex; gap: 5px;">
+                            @for (int i = 1; i <= 5; i++)
+                            {
+                                <span style="cursor: pointer; font-size: 1.5rem;"
+                                      class="@(i <= rating ? "text-warning" : "text-secondary")"
+                                      @onclick="() => rating = i">
+                                    &#9733;
+                                </span>
+                            }
                         </div>
+                    </div>
 
-                        <div class="form-group mb-3">
-                            <label for="comment" class="form-label"><strong>Comment:</strong></label>
-                            <InputTextArea id="comment" placeholder="Type your comment here..." @bind-Value="comment" rows="4" class="form-control" />
-                        </div>
+                    <div class="form-group mb-3">
+                        <label for="comment" class="form-label" style="color: #3a236e; font-weight: bold; font-size: 1.1rem;">
+                            Comment:
+                        </label>
+                        <InputTextArea id="comment" placeholder="Type your comment here..." @bind-Value="comment" rows="4"
+                                       class="form-control"
+                                       style="border: 1px solid #d3bce8; border-radius: 5px; padding: 10px;" />
+                    </div>
 
-                        <div class="d-flex justify-content-between">
-                            <button type="submit" class="btn btn-success">
-                                <i class="bi bi-check-circle"></i> Submit Review
-                            </button>
-                            <a href="/events" class="btn btn-secondary">
-                                <i class="bi bi-arrow-left"></i> Cancel
-                            </a>
-                        </div>
-                    </EditForm>
-                </div>
+                    <div class="d-flex justify-content-between">
+                        <button type="submit" class="btn btn-success"
+                                style="background-color: #28a745; border-color: #1e7e34; box-shadow: 0 4px 10px rgba(40, 167, 69, 0.5); font-size: 1rem; font-weight: bold; padding: 10px 20px; border-radius: 8px; transition: background-color 0.3s, box-shadow 0.3s;">
+                            <i class="bi bi-check-circle"></i> Submit Review
+                        </button>
+
+                        <button type="button" class="btn btn-danger"
+                                @onclick="HandleCancel"
+                                style="background-color: #dc3545; border-color: #bd2130; box-shadow: 0 4px 10px rgba(220, 53, 69, 0.5); font-size: 1rem; font-weight: bold; padding: 10px 20px; border-radius: 8px; transition: background-color 0.3s, box-shadow 0.3s;">
+                            <i class="bi bi-arrow-left"></i> Cancel
+                        </button>
+                    </div>
+                </EditForm>
             </div>
         </div>
     }
 
-    <a href="/events" class="btn btn-secondary mt-3">Back to Events</a>
+
+    
 }
 
+ 
 @code {
     [Parameter]
     public int Id { get; set; }
@@ -125,24 +183,23 @@ else
     private bool IsUserRegistered { get; set; } = false;
     private string JoinButtonText { get; set; } = "Join Event";
     private bool IsAuthenticated { get; set; } = false;
-    private bool IsAdmin { get; set; } = false;
-    private bool IsOrganizer { get; set; } = false;
+    private bool CanDelUser { get; set; } = false;
     private bool CanJoinEvent { get; set; } = false;
     private bool CanAddReview { get; set; } = false;
     private bool CanDeleteReview { get; set; } = false;
-
     protected override async Task OnInitializedAsync()
     {
         var authState = await AuthenticationStateProvider.GetAuthenticationStateAsync();
         var user = authState.User;
 
+        Event = await ViewEventByIdUseCase.ExecuteAsync(Id);
+        RegisteredUsers = await GetUsersByEventIdUseCase.ExecuteAsync(Id);
+        Reviews = await GetReviewsByEventIdUseCase.ExecuteAsync(Id);
+
         if (user?.Identity?.IsAuthenticated == true)
         {
             IsAuthenticated = true;
 
-            CanJoinEvent = user.HasClaim("role", "Admin") || user.HasClaim("role", "Organizer") || user.HasClaim("role", "Participant");
-            CanAddReview = CanJoinEvent;
-            CanDeleteReview = user.HasClaim("role", "Admin");
             var userId = user.FindFirst(System.Security.Claims.ClaimTypes.NameIdentifier)?.Value;
             JoinModel = new JoinEventViewModel
                 {
@@ -160,18 +217,19 @@ else
                     Comment = string.Empty
                 };
 
-            Event = await ViewEventByIdUseCase.ExecuteAsync(Id);
-            RegisteredUsers = await GetUsersByEventIdUseCase.ExecuteAsync(Id);
-            Reviews = await GetReviewsByEventIdUseCase.ExecuteAsync(Id);
+            CanJoinEvent = true;
+            CanAddReview = true;
+            CanDelUser = true;
+            CanDeleteReview = user.HasClaim("role", "Admin");
 
             IsUserRegistered = RegisteredUsers.Any(u => u.Name == user.Identity.Name);
-            JoinButtonText = IsUserRegistered ? "Unjoin" : "Join Event";
+            JoinButtonText = IsUserRegistered ? "Unjoin" : "Join  vent";
         }
         else
         {
-            Event = await ViewEventByIdUseCase.ExecuteAsync(Id);
-            RegisteredUsers = await GetUsersByEventIdUseCase.ExecuteAsync(Id);
-            Reviews = await GetReviewsByEventIdUseCase.ExecuteAsync(Id);
+              // Не ініціалізувати модель для неавторизованих
+            IsAuthenticated = false;
+            CanJoinEvent = false;
         }
     }
 
@@ -203,7 +261,7 @@ else
         }
 
         RegisteredUsers = await GetUsersByEventIdUseCase.ExecuteAsync(Id);
-        NavigationManager.NavigateTo(NavigationManager.Uri + "#joinFormContainer", forceLoad: false);
+         
     }
 
     private async Task HandleAddReview()
@@ -222,14 +280,36 @@ else
                 });
 
             Reviews = await GetReviewsByEventIdUseCase.ExecuteAsync(Id);
+            rating = 0;  
+            comment = string.Empty;
 
             ReviewModel.Rating = 0;
             ReviewModel.Comment = string.Empty;
-            NavigationManager.NavigateTo(NavigationManager.Uri + "#reviewFormContainer", forceLoad: false);
+             
         }
     }
 
-    
+    private async Task RemoveUserFromEvent(string userId)
+    {
+        await UnregisterUserFromEventUseCase.ExecuteAsync(new UserEvent
+            {
+                UserId = userId,
+                EventId = Id
+            });
+
+        RegisteredUsers = await GetUsersByEventIdUseCase.ExecuteAsync(Id);
+    }
+    private void HandleCancel()
+    {
+        // Скидання введених даних
+        rating = 0;
+        comment = string.Empty;
+
+        
+
+        
+    }
+
 }
 
 

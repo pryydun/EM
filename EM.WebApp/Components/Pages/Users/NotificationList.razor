@@ -22,6 +22,7 @@ else
             <div style="border: 1px solid #ccc; border-radius: 5px; padding: 1rem; margin-bottom: 1rem; background-color: @(notification.IsRead ? "#e7f7e7" : "#ffe5e5");">
                 <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 0.5rem;">
                     <h5 style="margin: 0;">@notification.Title</h5>
+                    <p style="margin: 0 0 1rem;">@notification.Sender</p>
                     <small>@notification.CreatedAt.ToLocalTime()</small>
                 </div>
                 <p style="margin: 0 0 1rem;">@notification.Message</p>

@@ -14,5 +14,6 @@ namespace EM.CoreBusiness
         public string RecipientId { get; set; } // Id отримувача з бази Identity
         public bool IsRead { get; set; } // Прочитане чи ні
         public DateTime CreatedAt { get; set; } // Дата створення
+        public string Sender { get; set; }
     }
 }

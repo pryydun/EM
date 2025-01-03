@@ -1,17 +1,107 @@
 ﻿@inherits LayoutComponentBase
+@inject NavigationManager NavigationManager
+<nav class="navbar navbar-expand-lg navbar-dark bg-dark">
+    <div class="container-fluid">
+        <a class="navbar-brand d-flex align-items-center" href="/">
+            <img src="/uploads/Снимок.JPG" alt="Logo" style="height: 40px; margin-left: 5px;">
+        </a>
+        <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarNav" aria-controls="navbarNav" aria-expanded="false" aria-label="Toggle navigation">
+            <span class="navbar-toggler-icon"></span>
+        </button>
+        <div class="collapse navbar-collapse" id="navbarNav">
+            <ul class="navbar-nav me-auto">
+                <li class="nav-item">
+                    <NavLink class="nav-link neon-effect" href="/" Match="NavLinkMatch.All">
+                        <i class="bi bi-house-door-fill"></i> Home
+                    </NavLink>
+                </li>
+                <li class="nav-item">
+                    <NavLink class="nav-link neon-effect" href="/events">
+                        <i class="bi bi-calendar-event-fill"></i> Events
+                    </NavLink>
+                </li>
+                <li class="nav-item">
+                    <NavLink class="nav-link neon-effect" href="/users">
+                        <i class="bi bi-people-fill"></i> Users
+                    </NavLink>
+                </li>
+                <li class="nav-item">
+                    <NavLink class="nav-link neon-effect" href="/my-profile">
+                        <i class="bi bi-person-fill"></i> My Profile
+                    </NavLink>
+                </li>
+                <li class="nav-item">
+                    <NavLink class="nav-link neon-effect" href="/notifications">
+                        <i class="bi bi-bell-fill"></i> Notifications
+                    </NavLink>
+                </li>
+                <li class="nav-item">
+                    <NavLink class="nav-link neon-effect" href="/add-event">
+                        <i class="bi bi-calendar-event"></i> Create Event
+                    </NavLink>
+                </li>
+            </ul>
 
-<div class="page">
-    <div class="sidebar">
-        <NavMenu />
-    </div>
-
-    <main>
-        <div class="top-row px-4">
-            <a href="https://learn.microsoft.com/aspnet/core/" target="_blank">About</a>
+            <AuthorizeView>
+                <Authorized>
+                    <span class="navbar-text me-3 neon-effect" >
+         
+                        <a href="Account/Manage" class="text-decoration-none text-light">
+                            @context.User.Identity?.Name
+                        </a>
+                    </span>
+                    <form action="/Account/Logout" method="post" class="d-inline">
+                        <AntiforgeryToken />
+                        <input type="hidden" name="ReturnUrl" value="@currentUrl" />
+                        <button type="submit" class="btn btn-link nav-link neon-effect">Logout</button>
+                    </form>
+                </Authorized>
+                <NotAuthorized>
+                    <ul class="navbar-nav">
+                        <li class="nav-item">
+                            <NavLink class="nav-link neon-effect" href="/Account/Register">
+                                <i class="bi bi-pencil-square"></i> Register
+                            </NavLink>
+                        </li>
+                        <li class="nav-item">
+                            <NavLink class="nav-link neon-effect" href="/Account/Login">
+                                <i class="bi bi-box-arrow-in-right"></i> Login
+                            </NavLink>
+                        </li>
+                    </ul>
+                </NotAuthorized>
+            </AuthorizeView>
         </div>
+    </div>
+</nav>
 
-        <article class="content px-4">
-            @Body
-        </article>
-    </main>
-</div>
+<style>
+  
+</style>
+
+<main>
+    <article class="content px-4">
+        @Body
+    </article>
+</main>
+@code {
+    private string? currentUrl;
+
+    protected override void OnInitialized()
+    {
+        currentUrl = NavigationManager.ToBaseRelativePath(NavigationManager.Uri);
+        NavigationManager.LocationChanged += OnLocationChanged;
+    }
+
+    private void OnLocationChanged(object? sender, LocationChangedEventArgs e)
+    {
+        currentUrl = NavigationManager.ToBaseRelativePath(e.Location);
+        StateHasChanged();
+    }
+
+    public void Dispose()
+    {
+        NavigationManager.LocationChanged -= OnLocationChanged;
+    }
+
+}

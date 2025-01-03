@@ -15,6 +15,7 @@ namespace EM_UseCases.PluginInterfaces
       public  Task<Event> GetEventByIdAsync(int eventId);
        public Task<IEnumerable<Event>> GetEventsByNameAsync(string name);
        public Task UpdateEventAsync(Event updatedEvent);
+        public Task<IEnumerable<Event>> GetAllAsync();
     }
 
 }

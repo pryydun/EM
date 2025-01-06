@@ -27,6 +27,9 @@ namespace EM.WebApp.Components.Pages.ViewModel
         public string Location { get; set; } = string.Empty; // Локація
 
         public string? ImagePath { get; set; } = string.Empty;
+
+
+        public string? OrganizerId { get; set; }
     }
 
 

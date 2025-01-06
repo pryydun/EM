@@ -73,6 +73,6 @@
     {
         await DeleteReviewUseCase.ExecuteAsync(reviewId);
         Reviews = await GetReviewsByEventIdUseCase.ExecuteAsync(Id);
-        NavigationManager.NavigateTo(NavigationManager.Uri + "#reviewFormContainer", forceLoad: false);
+         
     }
 }

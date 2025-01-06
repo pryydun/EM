@@ -41,7 +41,7 @@ namespace EM.Plugins.EFCoreSQLServer
         {
             using var db = _contextFactory.CreateDbContext();
             return await db.Events
-                           .OrderByDescending(e => e.StartDate) // Сортування за зростанням дати початку
+                           .OrderBy(e => e.StartDate) // Сортування за зростанням дати початку
                            .ToListAsync()
                            ?? Enumerable.Empty<Event>();
         }
@@ -82,6 +82,13 @@ namespace EM.Plugins.EFCoreSQLServer
             return await db.Events.ToListAsync();
         }
 
+        public async Task<IEnumerable<Event>> GetEventsByOrganizerAsync(string organizerId)
+        {
+            using var db = _contextFactory.CreateDbContext();
+            return await db.Events
+                           .Where(e => e.OrganizerId == organizerId)
+                           .ToListAsync();
+        }
 
     }
 }

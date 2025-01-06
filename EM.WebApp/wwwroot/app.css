@@ -18,83 +18,16 @@ html, body {
 /* Заголовки */
 h1, h2, h3 {
     color: black;
-    font-size: 3rem;
+    font-size: 2rem;
     font-weight: bold;
     text-align: center;
     text-shadow: 2px 2px 0px #9c7fc7, 4px 4px 0px #b89ed9, 6px 6px 5px rgba(108, 71, 165, 0.4);
     font-family: fantasy;
 }
 
-/* Навігація */
-.navbar {
-    position: sticky;
-    top: 0;
-    z-index: 1000;
-    background: linear-gradient(90deg, #3a236e, #281947);
-    box-shadow: 0 4px 8px rgba(0, 0, 0, 0.3);
-    padding: 0.8rem 2rem;
-}
+ 
 
-.navbar-brand {
-    background-color: black;
-    font-weight: bold;
-    text-transform: uppercase;
-    font-size: 1.5rem;
-    padding-right: 1rem;
-}
 
-    .navbar-brand:hover {
-        color: white;
-    }
-
-.navbar-toggler {
-    background-color: #6c47a5;
-    border: none;
-    border-radius: 8px;
-    padding: 0.8rem 1.5rem;
-    font-size: 1.2rem;
-    transition: background-color 0.3s, transform 0.3s;
-}
-
-    .navbar-toggler:hover {
-        background-color: #9c7fc7;
-        transform: scale(1.05);
-        box-shadow: 0 4px 8px rgba(156, 127, 199, 0.5);
-    }
-
-.navbar-nav {
-    display: flex;
-    gap: 1rem;
-}
-
-.nav-item {
-    flex-grow: 1;
-    text-align: center;
-}
-
-.nav-link {
-    color: white;
-    font-weight: bold;
-    font-size: 1.2rem;
-    padding: 0.7rem 2rem;
-    border-radius: 8px;
-    background: #6c47a5;
-    box-shadow: 0 4px 8px rgba(108, 71, 165, 0.5);
-    transition: background-color 0.3s, transform 0.2s;
-    text-align: center;
-}
-
-    .nav-link:hover {
-        background: #9c7fc7;
-        transform: scale(1.05);
-        box-shadow: 0 6px 12px rgba(156, 127, 199, 0.7);
-    }
-
-.navbar-text {
-    color: white;
-    font-weight: bold;
-    font-size: 1rem;
-}
 
 /* Кнопки */
 .btn {
@@ -173,4 +106,5 @@ main {
         text-shadow: 0 0 5px #ffffff, 0 0 10px #ffffff, 0 0 20px #ffffff;
         color: #000000; /* Текст залишається чорним, але підсвічується білим */
     }
+ 
  

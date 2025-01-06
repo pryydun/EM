@@ -3,6 +3,7 @@
 
 @using EM.CoreBusiness
 @using EM.WebApp.Components.Pages.ViewModel
+@attribute [Authorize(Policy = "OrganizerOrAdminPolicy")]
 @inject IEditEventUseCase EditEventUseCase
 @inject IViewEventByIdUseCase ViewEventByIdUseCase
 @inject NavigationManager NavigationManager
@@ -13,40 +14,43 @@
 @if (eventToEdit != null)
 {
     <div class="container p-5" style="max-width: 600px; margin: 0 auto; background-color: #ffffff; border-radius: 10px; box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);">
-        <EditForm Model="eventToEdit" Formname="EditEventForm" OnValidSubmit="UpdateEvent">
+        <EditForm Model="eventToEdit" FormName="EditEventForm" OnValidSubmit="UpdateEvent">
             <DataAnnotationsValidator></DataAnnotationsValidator>
-            <ValidationSummary></ValidationSummary>
+            
 
             <InputNumber @bind-Value="eventToEdit.Id" hidden></InputNumber>
 
             <div class="form-group mb-3">
                 <label for="eventTitle" style="font-weight: bold; color: #555;">Event Title</label>
-                <InputText id="eventTitle" @bind-Value="eventToEdit.Title" class="form-control" style="border: 1px solid #ddd; border-radius: 6px;" />
+                <InputText id="eventTitle" @bind-Value="eventToEdit.Title" class="form-control" />
+                <ValidationMessage For="@(() => eventToEdit.Title)" class="text-danger" />
             </div>
 
             <div class="form-group mb-3">
                 <label for="eventDescription" style="font-weight: bold; color: #555;">Event Description</label>
-                <InputTextArea id="eventDescription" @bind-Value="eventToEdit.Description" class="form-control" style="border: 1px solid #ddd; border-radius: 6px;" />
+                <InputTextArea id="eventDescription" @bind-Value="eventToEdit.Description" class="form-control" />
+                <ValidationMessage For="@(() => eventToEdit.Description)" class="text-danger" />
             </div>
 
             <div class="form-group mb-3">
                 <label for="eventStartDate" style="font-weight: bold; color: #555;">Start Date</label>
-                <InputDate id="eventStartDate" @bind-Value="eventToEdit.StartDate" class="form-control" style="border: 1px solid #ddd; border-radius: 6px;" TValue="DateTime" />
+                <InputDate id="eventStartDate" @bind-Value="eventToEdit.StartDate" class="form-control"   TValue="DateTime" />
             </div>
 
             <div class="form-group mb-3">
                 <label for="eventEndDate" style="font-weight: bold; color: #555;">End Date</label>
-                <InputDate id="eventEndDate" @bind-Value="eventToEdit.EndDate" class="form-control" style="border: 1px solid #ddd; border-radius: 6px;" TValue="DateTime" />
+                <InputDate id="eventEndDate" @bind-Value="eventToEdit.EndDate" class="form-control"   TValue="DateTime" />
             </div>
 
             <div class="form-group mb-3">
                 <label for="eventLocation" style="font-weight: bold; color: #555;">Location</label>
-                <InputText id="eventLocation" @bind-Value="eventToEdit.Location" class="form-control" style="border: 1px solid #ddd; border-radius: 6px;" />
+                <InputText id="eventLocation" @bind-Value="eventToEdit.Location" class="form-control"   />
+                <ValidationMessage For="@(() => eventToEdit.Location)" class="text-danger" />
             </div>
 
             <div class="form-group mb-3">
                 <label for="eventPhoto" style="font-weight: bold; color: #555;">Event Photo</label>
-                <InputFile id="eventPhoto" OnChange="HandleImageChange" class="form-control" style="border: 1px solid #ddd; border-radius: 6px;" />
+                <InputFile id="eventPhoto" OnChange="HandleImageChange" class="form-control"  />
             </div>
 
             @if (!string.IsNullOrEmpty(eventToEdit.ImagePath))

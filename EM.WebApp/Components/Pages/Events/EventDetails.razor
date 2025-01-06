@@ -23,11 +23,9 @@
 else
 {
     <div id="joinFormContainer">
-    <EventCard Event="Event" />
+        <EventCard Event="Event" />
     </div>
 
-
-   
     @if (JoinModel != null)
     {
         <EditForm Model="JoinModel" OnValidSubmit="HandleJoinOrUnjoin" FormName="JoinForm">
@@ -38,16 +36,14 @@ else
             {
                 <button class="btn btn-success mt-3" type="submit"
                         style="background-color: #28a745;
-                   border-color: #1e7e34;
-                   font-size: 1rem;
-                   font-weight: bold;
-                    
-                   border-radius: 8px;
-                   text-transform: uppercase;
-                   color: white;">
+                               border-color: #1e7e34;
+                               font-size: 1rem;
+                               font-weight: bold;
+                               border-radius: 8px;
+                               text-transform: uppercase;
+                               color: white;">
                     @JoinButtonText
                 </button>
-
             }
         </EditForm>
 
@@ -82,6 +78,13 @@ else
                                                 </button>
                                             </EditForm>
                                         }
+                                        @if (CanNotify)
+                                        {
+                                            <a href="/create-notification/@us.Id" class="btn btn-outline-secondary btn-sm"
+                                               style="transition: background-color 0.3s, color 0.3s;">
+                                                <i class="bi bi-chat"></i> Notify
+                                            </a>
+                                        }
                                     </div>
                                 </li>
                             }
@@ -95,16 +98,12 @@ else
             </details>
         }
 
-
-          
         
-        }
-
-
-
-    <RewiewList Reviews="Reviews"
-                CanDeleteReview="CanDeleteReview" Id="Id" />
-    @if (ReviewModel != null && CanAddReview)
+    }
+}
+<RewiewList Reviews="Reviews" CanDeleteReview="CanDeleteReview" Id="Id" />
+  
+@if (ReviewModel != null && CanAddReview)
     {
         <div class="card mt-4 shadow-sm">
             <div class="card-header"
@@ -162,7 +161,7 @@ else
 
 
     
-}
+
 
  
 @code {
@@ -185,6 +184,7 @@ else
     private bool IsAuthenticated { get; set; } = false;
     private bool CanDelUser { get; set; } = false;
     private bool CanJoinEvent { get; set; } = false;
+    private bool CanNotify { get; set; } = false;
     private bool CanAddReview { get; set; } = false;
     private bool CanDeleteReview { get; set; } = false;
     protected override async Task OnInitializedAsync()
@@ -201,6 +201,24 @@ else
             IsAuthenticated = true;
 
             var userId = user.FindFirst(System.Security.Claims.ClaimTypes.NameIdentifier)?.Value;
+
+            // Адміністратор має повний доступ
+            if (user.HasClaim("role", "Admin"))
+            {
+                CanDelUser = true;
+                CanDeleteReview = true;
+            }
+            // Організатор може видаляти учасників і відгуки, якщо це його подія
+            else if (user.HasClaim("role", "Organizer") && Event?.OrganizerId == userId)
+            {
+                CanDelUser = true;
+                CanDeleteReview = true;
+            }
+            if (user.HasClaim("role", "Admin") || (user.HasClaim("role", "Organizer") && Event?.OrganizerId == userId))
+            {
+                CanNotify = true;
+            }
+
             JoinModel = new JoinEventViewModel
                 {
                     UserId = userId,
@@ -219,15 +237,12 @@ else
 
             CanJoinEvent = true;
             CanAddReview = true;
-            CanDelUser = true;
-            CanDeleteReview = user.HasClaim("role", "Admin");
 
             IsUserRegistered = RegisteredUsers.Any(u => u.Name == user.Identity.Name);
-            JoinButtonText = IsUserRegistered ? "Unjoin" : "Join  vent";
+            JoinButtonText = IsUserRegistered ? "Unjoin" : "Join Event";
         }
         else
         {
-              // Не ініціалізувати модель для неавторизованих
             IsAuthenticated = false;
             CanJoinEvent = false;
         }

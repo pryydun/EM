@@ -6,6 +6,7 @@
 @inject IAddEventsUseCase AddEventsUseCase
 @inject NavigationManager NavigationManager
 @inject IWebHostEnvironment _webHostEnvironment
+@inject AuthenticationStateProvider AuthenticationStateProvider
 @rendermode InteractiveServer
 
 <h3>Add Event</h3>
@@ -14,7 +15,7 @@
 <div class="container p-5" style="max-width: 600px; margin: 0 auto; background-color: #f9f9f9; border-radius: 8px; box-shadow: 0px 4px 8px rgba(0, 0, 0, 0.1);">
      
     <EditForm Model="newEvent" OnValidSubmit="Save" FormName="AddEventForm">
-        <DataAnnotationsValidator /> <ValidationSummary />
+        <DataAnnotationsValidator />
 
         <div class="form-group mb-3">
             <label for="eventTitle" style="font-weight: bold; color: #555;">Event Title</label>
@@ -65,51 +66,60 @@
     private string? imagePath;
     private string? directoryPath;
 
-    
 
-  
-        private async Task UploadImage(InputFileChangeEventArgs e)
+
+
+    private async Task UploadImage(InputFileChangeEventArgs e)
+    {
+
+
+        var file = e.File;
+
+
+        Console.WriteLine($"File name: {file.Name}, Size: {file.Size}");
+
+        var uniqueFileName = $"{Guid.NewGuid()}_{file.Name}";
+        var directoryPath = Path.Combine("wwwroot", "uploads");
+        var filePath = Path.Combine(directoryPath, uniqueFileName);
+
+        if (!Directory.Exists(directoryPath))
         {
+            Directory.CreateDirectory(directoryPath);
+        }
 
-        
-            var file = e.File;
-             
+        using var fileStream = new FileStream(filePath, FileMode.Create);
+        await file.OpenReadStream(maxAllowedSize: 10 * 1024 * 1024).CopyToAsync(fileStream);
 
-            Console.WriteLine($"File name: {file.Name}, Size: {file.Size}");
+        imagePath = $"/uploads/{uniqueFileName}";
+        Console.WriteLine($"Image uploaded successfully: {imagePath}");
 
-            var uniqueFileName = $"{Guid.NewGuid()}_{file.Name}";
-            var directoryPath = Path.Combine("wwwroot", "uploads");
-            var filePath = Path.Combine(directoryPath, uniqueFileName);
 
-            if (!Directory.Exists(directoryPath))
-            {
-                Directory.CreateDirectory(directoryPath);
-            }
-
-            using var fileStream = new FileStream(filePath, FileMode.Create);
-            await file.OpenReadStream(maxAllowedSize: 10 * 1024 * 1024).CopyToAsync(fileStream);
-
-            imagePath = $"/uploads/{uniqueFileName}";
-            Console.WriteLine($"Image uploaded successfully: {imagePath}");
-        
-        
     }
     private async Task Save()
     {
-        var ev = new Event
-            {
-                Id = newEvent.Id,
-                Title = newEvent.Title,
-                Description = newEvent.Description,
-                StartDate = newEvent.StartDate,
-                EndDate = newEvent.EndDate,
-                Location = newEvent.Location,
-                ImagePath = imagePath
-            };
+        var authState = await AuthenticationStateProvider.GetAuthenticationStateAsync();
+        var user = authState.User;
 
-        await AddEventsUseCase.ExecuteAsync(ev);
-        NavigationManager.NavigateTo("/events");
-    }
+        if (user?.Identity?.IsAuthenticated == true)
+        {
+            // Отримання ідентифікатора користувача
+            var organizerId = user.FindFirst(System.Security.Claims.ClaimTypes.NameIdentifier)?.Value;
+
+            var ev = new Event
+                {
+                    Id = newEvent.Id,
+                    Title = newEvent.Title,
+                    Description = newEvent.Description,
+                    StartDate = newEvent.StartDate,
+                    EndDate = newEvent.EndDate,
+                    Location = newEvent.Location,
+                    ImagePath = imagePath,
+                    OrganizerId = organizerId
+                };
+
+            await AddEventsUseCase.ExecuteAsync(ev);
+            NavigationManager.NavigateTo("/events");
+        } }
 }
 
 

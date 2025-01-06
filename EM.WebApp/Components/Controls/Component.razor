@@ -1,0 +1,69 @@
+﻿@page "/event-details/{Id:int}"
+@using EM.WebApp.Components.Pages.ViewModel
+
+<h3>Event Details</h3>
+
+@if (Event == null)
+{
+    <p>Loading...</p>
+}
+else
+{
+    <EventCard Event="Event" />
+    <RegisteredUsersList RegisteredUsers="RegisteredUsers" />
+
+    @if (CanAddReview)
+    {
+        <AddReviewForm ReviewModel="ReviewModel" OnAddReview="HandleAddReview" />
+    }
+
+    <ReviewList Reviews="Reviews" CanDeleteReview="CanDeleteReview" OnDeleteReview="HandleDeleteReview" />
+
+    <a href="/events" class="btn btn-secondary mt-3">Back to Events</a>
+}
+
+@code {
+    [Parameter]
+    public int Id { get; set; }
+
+    private Event? Event { get; set; }
+    private List<User> RegisteredUsers { get; set; } = new();
+    private List<Review> Reviews { get; set; } = new();
+    private ReviewViewModel? ReviewModel { get; set; }
+    private bool CanAddReview { get; set; } = false;
+    private bool CanDeleteReview { get; set; } = false;
+
+    protected override async Task OnInitializedAsync()
+    {
+        // Завантаження даних (це приклад, змініть відповідно до вашої логіки)
+        Event = await LoadEventById(Id);
+        RegisteredUsers = await LoadRegisteredUsers(Id);
+        Reviews = await LoadReviews(Id);
+
+        // Перевірка прав
+        CanAddReview = true; // Змінити відповідно до автентифікації
+        CanDeleteReview = true; // Змінити відповідно до автентифікації
+    }
+
+    private async Task HandleAddReview()
+    {
+        if (ReviewModel != null)
+        {
+            await SaveReview(ReviewModel);
+            Reviews = await LoadReviews(Id);
+        }
+    }
+
+    private async Task HandleDeleteReview(int reviewId)
+    {
+        await DeleteReview(reviewId);
+        Reviews = await LoadReviews(Id);
+    }
+
+    // Метод-заглушки для логіки завантаження і збереження
+    private Task<Event?> LoadEventById(int id) => Task.FromResult<Event?>(null);
+    private Task<List<User>> LoadRegisteredUsers(int id) => Task.FromResult(new List<User>());
+    private Task<List<Review>> LoadReviews(int id) => Task.FromResult(new List<Review>());
+    private Task SaveReview(ReviewViewModel review) => Task.CompletedTask;
+    private Task DeleteReview(int id) => Task.CompletedTask;
+}

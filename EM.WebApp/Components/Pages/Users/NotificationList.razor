@@ -20,11 +20,16 @@ else
         @foreach (var notification in Notifications)
         {
             <div style="border: 1px solid #ccc; border-radius: 5px; padding: 1rem; margin-bottom: 1rem; background-color: @(notification.IsRead ? "#e7f7e7" : "#ffe5e5");">
-                <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 0.5rem;">
-                    <h5 style="margin: 0;">@notification.Title</h5>
-                    <p style="margin: 0 0 1rem;">@notification.Sender</p>
-                    <small>@notification.CreatedAt.ToLocalTime()</small>
+                <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 1rem;">
+                    <p style="margin: 0; font-size: 0.9rem; color: #6c757d; font-weight: bold;"><strong>From:</strong> @notification.Sender</p>
+                    <small style="font-size: 0.8rem; color: #6c757d;">@notification.CreatedAt.ToLocalTime().ToString("g")</small>
                 </div>
+
+                <!-- Заголовок -->
+                <h5 style="margin: 0; font-size: 1.5rem; color: #3a236e; margin-bottom: 1rem;">@notification.Title</h5>
+
+               
+
                 <p style="margin: 0 0 1rem;">@notification.Message</p>
                 <div style="display: flex; gap: 0.5rem;">
                     @if (!notification.IsRead)

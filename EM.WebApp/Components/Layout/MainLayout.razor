@@ -1,5 +1,6 @@
 ﻿@inherits LayoutComponentBase
 @inject NavigationManager NavigationManager
+
 <nav class="navbar navbar-expand-lg navbar-dark bg-dark">
     <div class="container-fluid">
         <a class="navbar-brand d-flex align-items-center" href="/">
@@ -35,6 +36,7 @@
                         <i class="bi bi-bell-fill"></i> Notifications
                     </NavLink>
                 </li>
+               
                 <li class="nav-item">
                     <NavLink class="nav-link neon-effect" href="/add-event">
                         <i class="bi bi-calendar-event"></i> Create Event
@@ -44,8 +46,8 @@
 
             <AuthorizeView>
                 <Authorized>
-                    <span class="navbar-text me-3 neon-effect" >
-         
+                    <span class="navbar-text me-3 neon-effect">
+
                         <a href="Account/Manage" class="text-decoration-none text-light">
                             @context.User.Identity?.Name
                         </a>
@@ -76,7 +78,7 @@
 </nav>
 
 <style>
-  
+
 </style>
 
 <main>
@@ -105,3 +107,64 @@
     }
 
 }
+<style>
+    /* Навігація */
+    .navbar {
+        position: fixed; /* Закріплюємо меню зверху */
+        top: 0;
+        left: 0;
+        width: 100%; /* На всю ширину екрану */
+        z-index: 1000; /* Пріоритет відображення */
+        background: linear-gradient(90deg, #3a236e, #281947);
+        box-shadow: 0 4px 8px rgba(0, 0, 0, 0.3);
+        padding: 0.4rem 1.5rem; /* Трохи більші внутрішні відступи */
+        height: 70px; /* Збільшена висота меню */
+        display: flex; /* Використовується для вирівнювання елементів */
+        align-items: center; /* Вирівнювання елементів по вертикалі */
+        justify-content: space-between; /* Розподіл елементів */
+    }
+
+    .navbar-toggler {
+        background-color: #6c47a5;
+        border: none;
+        border-radius: 5px;
+        padding: 1.2rem 0.15rem; /* Трохи більші розміри кнопки */
+        font-size: 0.90rem; /* Трохи більший текст */
+        transition: background-color 0.3s, transform 0.3s;
+    }
+
+        .navbar-toggler:hover {
+            background-color: #9c7fc7;
+            transform: scale(1.05);
+            box-shadow: 0 4px 8px rgba(156, 127, 199, 0.5);
+        }
+
+    .nav-link {
+        color: white;
+        font-weight: bold;
+        font-size: 1.2rem; /* Трохи більший текст */
+        padding: 0.3rem 0.8rem; /* Трохи більші внутрішні відступи */
+        border-radius: 5px; /* Менше округлення */
+        background: #6c47a5;
+        box-shadow: 0 4px 8px rgba(108, 71, 165, 0.5);
+        transition: background-color 0.3s, transform 0.2s;
+        text-align: center;
+    }
+
+        .nav-link:hover {
+            background: #9c7fc7;
+            transform: scale(1.03); /* Трохи зменшено масштабування */
+            box-shadow: 0 6px 12px rgba(156, 127, 199, 0.7);
+        }
+
+    .navbar-text {
+        color: white;
+        font-weight: bold;
+        font-size: 0.8rem; /* Трохи більший текст */
+    }
+
+    body {
+        padding-top: 50px; /* Відступ для уникнення перекриття контенту меню */
+    }
+
+</style>

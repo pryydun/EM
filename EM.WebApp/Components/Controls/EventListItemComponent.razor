@@ -2,6 +2,7 @@
 @inject NavigationManager NavigationManager
 @inject IAuthorizationService AuthorizationService
 @inject AuthenticationStateProvider AuthenticationStateProvider
+
 @if (this.Event is not null)
 {
     <tr>
@@ -10,7 +11,7 @@
         <td>@Event.EndDate.ToShortDateString()</td>
         <td>@Event.Location</td>
         <td class="d-flex justify-content-center align-items-center gap-2">
-            @if (CanDeleteEditEvent)
+            @if (CanEditEvent)
             {
                 <a href="/edit-event/@Event.Id" class="btn btn-outline-success btn-sm d-flex align-items-center gap-1">
                     <i class="bi bi-pencil-fill"></i> Edit
@@ -19,7 +20,7 @@
             <a href="/event-details/@Event.Id" class="btn btn-outline-primary btn-sm d-flex align-items-center gap-1">
                 <i class="bi bi-info-circle-fill"></i> Details
             </a>
-            @if (CanDeleteEditEvent)
+            @if (CanDeleteEvent)
             {
                 <EditForm Model="Event"
                           FormName="@($"form-delete-event-{Event.Id}")"
@@ -31,13 +32,14 @@
             }
         </td>
     </tr>
-
-
 }
+
 @code {
     [Parameter]
     public Event? Event { get; set; }
-    private bool CanDeleteEditEvent { get; set; } = false;
+    private bool CanEditEvent { get; set; } = false;
+    private bool CanDeleteEvent { get; set; } = false;
+
     protected override async Task OnInitializedAsync()
     {
         var authState = await AuthenticationStateProvider.GetAuthenticationStateAsync();
@@ -49,19 +51,27 @@
         // Перевірка політики для організатора
         var organizerAuthorizationResult = await AuthorizationService.AuthorizeAsync(user, null, "OrganizerPolicy");
 
-        // Користувач має доступ, якщо одна з політик дозволяє
-        CanDeleteEditEvent = adminAuthorizationResult.Succeeded || organizerAuthorizationResult.Succeeded;
+        // Якщо користувач — адміністратор
+        if (adminAuthorizationResult.Succeeded)
+        {
+            CanEditEvent = true;
+            CanDeleteEvent = true;
+        }
+        // Якщо користувач — організатор і є власником події
+        else if (organizerAuthorizationResult.Succeeded && Event != null)
+        {
+            var userId = user.FindFirst(System.Security.Claims.ClaimTypes.NameIdentifier)?.Value;
+            if (!string.IsNullOrEmpty(userId) && Event.OrganizerId == userId)
+            {
+                CanEditEvent = true;
+                CanDeleteEvent = true;
+            }
+        }
     }
-
-
-
 
     private async Task DeleteEvent(int id)
     {
-
         await DeleteEventUseCase.ExecuteAsync(id);
-
         NavigationManager.Refresh();
-
     }
 }

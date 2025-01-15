@@ -1,9 +1,9 @@
 ﻿@page "/edit-event/{Id:int}"
-@attribute [Authorize(Policy = "OrganizerOrAdminPolicy")]
 
+@attribute [Authorize(Policy = "OrganizerOrAdminPolicy")]
 @using EM.CoreBusiness
 @using EM.WebApp.Components.Pages.ViewModel
-@attribute [Authorize(Policy = "OrganizerOrAdminPolicy")]
+ 
 @inject IEditEventUseCase EditEventUseCase
 @inject IViewEventByIdUseCase ViewEventByIdUseCase
 @inject NavigationManager NavigationManager

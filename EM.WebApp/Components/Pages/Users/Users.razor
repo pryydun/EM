@@ -23,7 +23,19 @@ else if (!UserList.Any())
 
 else
 
-{
+
+
+{@if (IsAdminUser)
+
+
+
+    {
+        <div class="nav-item px-3">
+            <a class="nav-link" href="/create-global-notification">Send Global Notification</a>
+        </div>
+        <br />
+    }
+  
     <EditForm Model="searchFilter" FormName="Search" OnValidSubmit="Search">
         <div class="input-group mb-3">
             <InputText class="form-control"
@@ -38,7 +50,7 @@ else
             </button>
         </div>
     </EditForm>
-
+    
     <table class="table table-striped table-hover table-bordered">
         <thead class="table-dark">
             <tr>

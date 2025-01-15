@@ -45,5 +45,21 @@ namespace EM_UseCases
         {
             await _notificationRepository.DeleteAsync(notificationId);
         }
+
+        public async Task AddNotificationToAllAsync(string title, string message, string sender, List<string> userIds)
+        {
+            var notifications = userIds.Select(userId => new Notification
+            {
+                RecipientId = userId,
+                Title = title,
+                Message = message,
+                IsRead = false,
+                CreatedAt = DateTime.UtcNow,
+                Sender = sender
+            }).ToList();
+
+            await _notificationRepository.AddRangeAsync(notifications); // Масове додавання сповіщень
+        }
+
     }
 }

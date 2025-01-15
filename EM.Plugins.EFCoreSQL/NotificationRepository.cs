@@ -51,5 +51,10 @@ namespace EM.Plugins.EFCoreSQLServer
                 await _context.SaveChangesAsync();
             }
         }
+        public async Task AddRangeAsync(IEnumerable<Notification> notifications)
+        {
+            _context.Notifications.AddRange(notifications);
+            await _context.SaveChangesAsync();
+        }
     }
 }

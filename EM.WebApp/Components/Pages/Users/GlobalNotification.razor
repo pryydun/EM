@@ -1,0 +1,98 @@
+﻿@page "/create-global-notification"
+@using EM.WebApp.Data
+@using Microsoft.EntityFrameworkCore
+@inject ApplicationDbContext DbContext
+@inject NotificationService NotificationService
+@inject NavigationManager NavigationManager
+@inject AuthenticationStateProvider AuthenticationStateProvider
+
+@attribute [Authorize(Policy = "AdminPolicy")]
+
+<h3>Create Global Notification</h3>
+
+@if (UserIds == null || !UserIds.Any())
+{
+    <p>No users found in the system.</p>
+}
+else
+{
+    <EditForm EditContext="editContext" FormName="Globalnotific" OnValidSubmit="SendGlobalNotification">
+        <div class="mb-3">
+            <label class="form-label">Title</label>
+            <InputText class="form-control" @bind-Value="Title" />
+        </div>
+        <div class="mb-3">
+            <label class="form-label">Message</label>
+            <InputTextArea class="form-control" @bind-Value="Message" />
+        </div>
+        <button type="submit" class="btn btn-primary">Send to All Users</button>
+    </EditForm>
+
+    @if (IsSuccess)
+    {
+        <p class="text-success">Notification sent successfully!</p>
+    }
+    @if (IsError)
+    {
+        <p class="text-danger">Failed to send notification. Please try again.</p>
+    }
+}
+
+@code {
+    private List<string> UserIds = new();
+    [SupplyParameterFromForm]
+    private string Title { get; set; }
+    [SupplyParameterFromForm]
+    private string Message { get; set; }
+    private EditContext editContext;
+    private string Sender { get; set; }
+    private bool IsSuccess { get; set; } = false;
+    private bool IsError { get; set; } = false;
+
+    protected override async Task OnInitializedAsync()
+    {
+        var authState = await AuthenticationStateProvider.GetAuthenticationStateAsync();
+        var user = authState.User;
+        Sender = user.Identity?.Name ?? "Unknown";
+
+        // Завантаження всіх ID користувачів із DbContext
+        UserIds = await LoadAllUserIdsAsync();
+
+        editContext = new EditContext(this);
+    }
+
+    private async Task<List<string>> LoadAllUserIdsAsync()
+    {
+        // Отримання всіх користувачів із таблиці Users
+        var users = await DbContext.Users.ToListAsync();
+        return users.Select(u => u.Id).ToList();
+    }
+
+    private async Task SendGlobalNotification()
+    {
+        if (string.IsNullOrWhiteSpace(Title) || string.IsNullOrWhiteSpace(Message))
+        {
+            IsError = true;
+            IsSuccess = false;
+            return;
+        }
+
+        try
+        {
+            // Використовуємо NotificationService для надсилання сповіщень усім користувачам
+            await NotificationService.AddNotificationToAllAsync(Title, Message, Sender, UserIds);
+
+            IsSuccess = true;
+            IsError = false;
+
+            // Очистити поля
+            Title = string.Empty;
+            Message = string.Empty;
+        }
+        catch
+        {
+            IsError = true;
+            IsSuccess = false;
+        }
+    }
+}

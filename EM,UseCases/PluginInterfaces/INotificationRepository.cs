@@ -13,5 +13,6 @@ namespace EM_UseCases.PluginInterfaces
         Task<List<Notification>> GetByRecipientIdAsync(string recipientId);
         Task MarkAsReadAsync(int notificationId);
         Task DeleteAsync(int notificationId);
+        Task AddRangeAsync(IEnumerable<Notification> notifications);
     }
 }
